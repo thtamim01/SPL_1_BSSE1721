@@ -1,0 +1,17 @@
+# Compiled files
+*.exe
+*.o
+*.obj
+*.out
+
+# Build directories
+build/
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+
+# Temporary files
+*.tmp
+*.log
