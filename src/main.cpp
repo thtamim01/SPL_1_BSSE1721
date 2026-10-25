@@ -30,7 +30,7 @@ int main()
         int files = 0;
         int folders = 0;
 
-        for (const auto& entry : fs::directory_iterator(folderPath))
+       for (const auto& entry : fs::recursive_directory_iterator(folderPath, fs::directory_options::skip_permission_denied))
         {
             if (entry.is_directory())
             {
@@ -43,7 +43,7 @@ int main()
                 files++;
             }
 
-            cout << entry.path().filename().string() << endl;
+            cout << entry.path().lexically_relative(folderPath).string() << endl;
         }
 
         cout << "\nTotal Files: " << files << endl;
