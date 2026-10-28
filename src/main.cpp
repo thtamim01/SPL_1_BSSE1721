@@ -30,8 +30,18 @@ int main()
         int files = 0;
         int folders = 0;
 
-       for (const auto& entry : fs::recursive_directory_iterator(folderPath, fs::directory_options::skip_permission_denied))
+       
+    for (fs::recursive_directory_iterator it(folderPath, fs::directory_options::skip_permission_denied), end;
+     it != end; ++it)
+    {
+        const auto& entry = *it;
+
+        if (entry.is_directory() && entry.path().filename() == ".git")
         {
+        it.disable_recursion_pending();
+        continue;
+        }
+
             if (entry.is_directory())
             {
                 cout << "[FOLDER] ";
