@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include <filesystem>
+#include <cstdint>
+#include <iomanip>
 #include <string>
 using namespace std;
 
@@ -29,6 +31,7 @@ int main()
 
         int files = 0;
         int folders = 0;
+        std::uintmax_t totalBytes = 0;
 
        
     for (fs::recursive_directory_iterator it(folderPath, fs::directory_options::skip_permission_denied), end;
@@ -53,11 +56,30 @@ int main()
                 files++;
             }
 
-            cout << entry.path().lexically_relative(folderPath).string() << endl;
-        }
+cout << entry.path().lexically_relative(folderPath).string();
 
+    if (entry.is_regular_file())
+    {
+    std::error_code ec;
+    auto fileBytes = entry.file_size(ec);
+
+        if (!ec)
+        {
+         totalBytes += fileBytes;
+         cout << " (" << fileBytes << " bytes)";
+         }
+    }
+
+cout << endl;
+
+        }
         cout << "\nTotal Files: " << files << endl;
         cout << "Total Folders: " << folders << endl;
+        cout << "Total Size: " << totalBytes << " bytes" << endl;
+
+        cout << fixed << setprecision(2);
+        cout << "Total Size (KB): " << totalBytes / 1000.0 << endl;
+        cout << "Total Size (MB): " << totalBytes / 1000000.0 << endl;
     }
     catch (const fs::filesystem_error& e)
     {
