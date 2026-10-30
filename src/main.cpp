@@ -32,6 +32,7 @@ int main()
         int files = 0;
         int folders = 0;
         std::uintmax_t totalBytes = 0;
+        std::uintmax_t sizeErrors = 0;
 
        
     for (fs::recursive_directory_iterator it(folderPath, fs::directory_options::skip_permission_denied), end;
@@ -63,11 +64,16 @@ cout << entry.path().lexically_relative(folderPath).string();
     std::error_code ec;
     auto fileBytes = entry.file_size(ec);
 
-        if (!ec)
-        {
-         totalBytes += fileBytes;
-         cout << " (" << fileBytes << " bytes)";
-         }
+    if (!ec)
+{
+    totalBytes += fileBytes;
+    cout << " (" << fileBytes << " bytes)";
+}
+else
+{
+    sizeErrors++;
+    cout << " [size unavailable: " << ec.message() << "]";
+}
     }
 
 cout << endl;
@@ -80,6 +86,12 @@ cout << endl;
         cout << fixed << setprecision(2);
         cout << "Total Size (KB): " << totalBytes / 1000.0 << endl;
         cout << "Total Size (MB): " << totalBytes / 1000000.0 << endl;
+        if (sizeErrors > 0)
+{
+    cout << "Warning: could not measure " << sizeErrors
+         << " file(s). Total size includes only successfully measured files."
+         << endl;
+}
     }
     catch (const fs::filesystem_error& e)
     {
