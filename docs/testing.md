@@ -55,3 +55,14 @@ It does not establish behavior under actual Windows permission failures.
 - Larger directory trees.
 
 All fixtures used disposable test directories.
+## Test 3: Entry classification update
+
+After adding explicit regular-file checks and symbolic-link skipping,
+the Windows build and existing storage fixture passed again:
+2 files, 2 folders, and 1500000 bytes.
+
+The Windows symbolic-link test was blocked during fixture creation:
+"Administrator privilege required for this operation."
+
+The scanner was not run against those links.
+Windows symbolic-link skipping remains unverified.

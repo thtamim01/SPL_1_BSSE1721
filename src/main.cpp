@@ -39,6 +39,16 @@ int main()
      it != end; ++it)
     {
         const auto& entry = *it;
+        if (entry.is_symlink())
+{
+    it.disable_recursion_pending();
+
+    cout << "[SKIPPED LINK] "
+         << entry.path().lexically_relative(folderPath).string()
+         << endl;
+
+    continue;
+}
 
         if (entry.is_directory() && entry.path().filename() == ".git")
         {
@@ -51,12 +61,19 @@ int main()
                 cout << "[FOLDER] ";
                 folders++;
             }
-            else
+               else if (entry.is_regular_file())
             {
                 cout << "[FILE] ";
                 files++;
             }
+            else
+        {
+            cout << "[SKIPPED OTHER] "
+                 << entry.path().lexically_relative(folderPath).string()
+                 << endl;
 
+            continue;
+}
 cout << entry.path().lexically_relative(folderPath).string();
 
     if (entry.is_regular_file())
