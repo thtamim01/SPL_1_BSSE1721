@@ -41,3 +41,12 @@
 - A complete-history Git bundle is provided for import into the existing Windows repository.
 - Next: guarded local import, actual Windows test evidence, then a normal feature-branch push using the student's existing Git authentication.
 - No new Windows test results or remote publication are claimed by this entry.
+
+## 2026-11-03T02:44:44.0713628+06:00 - Phase 1 / 1.5 native Windows verification
+
+- Source checkpoint: 8999f4b766155a4e5aa64a0e0df405bd24ca34f8.
+- Actual result: RESULT: 19 passed, 0 failed, 6 skipped.
+- Evidence: docs/evidence/phase1-1.5-windows.txt.
+- Skipped cases remain unverified; no pass is inferred from a skip.
+- This entry and its report are committed together after the tested source.
+- Main integration remains pending. The handoff verifies a normal feature-branch push separately.
