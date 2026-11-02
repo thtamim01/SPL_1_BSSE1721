@@ -14,3 +14,5 @@ code; they do not invent personal learning experiences.
 
 Phase 2-7 manuals will be added alongside implemented code, not in advance.
 Recorded Linux results and new Windows execution must be identified separately.
+
+- [Phase 2.1 — File index](phase2-2.1-file-index.md)

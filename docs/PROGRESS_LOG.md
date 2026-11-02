@@ -50,3 +50,12 @@
 - Skipped cases remain unverified; no pass is inferred from a skip.
 - This entry and its report are committed together after the tested source.
 - Main integration remains pending. The handoff verifies a normal feature-branch push separately.
+
+## Phase 2 / 2.1 - Index checkpoint applied
+
+- Local date: 2026-11-03T03:44:10.7871629+06:00.
+- Added file index, path and extension lookup, application count, tests and manual.
+- Native Linux evidence: 11 index tests and 25 scanner/application tests passed.
+- Windows verification: 19 scanner tests passed, 0 failed, 6 skipped; 11 index tests passed, 0 failed. Output saved in docs/evidence/phase2-2.1-windows.txt.
+- Commit/publication reference: pending the tested Windows commit on phase2/2.1-index-data-structures.
+- Next: read learnings/phase2-2.1-file-index.md, run Windows tests, record actual output, commit and push.

@@ -182,7 +182,7 @@ Main is untouched. No new Windows run is claimed.
 
 | ID | Feature | Status | Acceptance criterion |
 | --- | --- | --- | --- |
-| 2.1 | Index data structures | NOT STARTED | Define file keys/records and justify lookup structures. |
+| 2.1 | Index data structures | TESTED | Define file keys/records and justify lookup structures. |
 | 2.2 | Persistent indexing | NOT STARTED | Round-trip validated records after restart; identify stale/missing files. |
 | 2.3 | Search engine | NOT STARTED | Name/extension and useful metadata filters; empty/invalid query behavior. |
 | 2.4 | Storage analytics | NOT STARTED | Heap-based largest-file ranking and extension/storage summaries. |
@@ -190,14 +190,14 @@ Main is untouched. No new Windows run is claimed.
 
 ### 2.1 - Index data structures
 - Phase/subphase: 2 / 2.1.
-- Status: NOT STARTED.
-- Acceptance: Define file keys/records and justify lookup structures.
-- Test evidence: None; planned work only.
-- Related commits: None for complete acceptance.
-- Learning manual: Not yet available for this subphase.
-- Dependencies: Phase 1 applicable acceptance.
-- Known problems: Not implemented.
-- Next action: Begin after dependencies and the agreed session checkpoint.
+- Status: TESTED.
+- Acceptance: File records keyed by relative path, extension grouping, replacement, documented complexity and application integration.
+- Test evidence: [Native Linux results](evidence/phase2-2.1-linux.txt): 11 index tests passed; 25 scanner/application regressions passed. Windows verified: 19 scanner tests passed, 0 failed, 6 skipped; 11 index tests passed, 0 failed.
+- Related commits: Windows checkpoint commit pending; no Phase 2.1 publication claimed.
+- Learning manual: [Phase 2.1](../learnings/phase2-2.1-file-index.md).
+- Dependencies: Published Phase 1.5 scanner checkpoint (user's Windows branch).
+- Known problems: In-memory only; case-sensitive path keys; extension queries ASCII-normalized; partial scans yield partial indexes.
+- Next action: Review code, run Windows suites, record actual evidence, commit and push phase2/2.1-index-data-structures. Then begin 2.2.
 
 ### 2.2 - Persistent indexing
 - Phase/subphase: 2 / 2.2.

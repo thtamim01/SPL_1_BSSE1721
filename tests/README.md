@@ -28,3 +28,7 @@ Direct Linux reproduction:
     ./build/scanner_tests
 
 Tests use explicit checks, not assertions disabled by NDEBUG.
+
+Phase 2.1 adds `file_index_tests.cpp`: 11 named checks for lookup, replacement,
+extension grouping, invalid keys and pointer stability. `scripts/test.ps1` runs
+both suites and stops on build failures or failed tests. Windows results are pending.

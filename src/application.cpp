@@ -1,5 +1,6 @@
 #include "application.hpp"
 #include "scanner.hpp"
+#include "file_index.hpp"
 
 #include <iomanip>
 #include <istream>
@@ -26,8 +27,10 @@ int runApplication(std::istream& input, std::ostream& output, const FileScanner&
 
     const auto result = scanner.scan(fs::u8path(folderPath));
     if (!result.rootValid) { output << "Invalid folder path!\n"; }
+    FileIndex index;
     for (const auto& entry : result.entries)
     {
+        index.add(entry);
         switch (entry.kind)
         {
         case EntryKind::Directory: output << "[FOLDER] "; break;
@@ -56,6 +59,7 @@ int runApplication(std::istream& input, std::ostream& output, const FileScanner&
            << std::fixed << std::setprecision(2)
            << "Total Size (KB): " << result.totalBytes / 1000.0 << '\n'
            << "Total Size (MB): " << result.totalBytes / 1000000.0 << '\n';
+    output << "Indexed Files: " << index.size() << '\n';
     if (!result.complete())
     {
         output << "Warning: scan incomplete (" << result.issues.size()

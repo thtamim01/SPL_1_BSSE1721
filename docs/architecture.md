@@ -73,3 +73,9 @@ latency add costs. No measured performance claim is made.
 Phase 2 adds indexing/search/heap analytics. Phase 3 adds rules, immutable plans,
 validated moves and undo. Those modules do not exist yet; no empty future
 implementation files were created.
+
+## Phase 2.1 index
+`application.cpp` feeds scanned entries to `FileIndex` and displays the indexed count.
+The index owns regular-file metadata in a path-keyed map and holds extension buckets
+of keys. Each instance describes one scan root. See the [manual](../learnings/phase2-2.1-file-index.md)
+for lookup costs, ownership, normalization and limits. Persistence is deferred to 2.2.
