@@ -9,5 +9,25 @@
 - Replaced the 14-phase planning convention with DEVELOPMENT PHASE 0-7 and numbered A-E checkpoints; no old history was renamed or rewritten.
 - Created DEVELOPMENT_ROADMAP.md, MIDTERM_READINESS.md and this log.
 - Verification: public Git refs/tree and exact source blob comparison; implementation/test execution belongs to later entries.
-- Commit: the `docs(phase1/1.5): establish phase tracker and midterm board` commit containing this entry; obtain its exact ID with git log. No GitHub publication is claimed here.
+- Commit: a30fa1e (phase1/1.5 tracker and board). No publication was claimed at that point.
 - Next: 1.3/1.4 error reporting and metadata, then 1.5 modular scanner/tests. This session stops after that checkpoint and Windows handoff.
+
+## 3 November 2026 - Phase 1 / 1.3-1.5 A-D checkpoint
+
+- A Develop: extracted FileScanner and application; introduced FileMetadata/ScanResult records.
+- Completed extension/time metadata, explicit directory/measurement issues, exclusions, guarded totals and stable output.
+- B Verify: 25 named cases passed, 0 failed, 0 skipped on Linux/GCC 13.3.0. Actual permission denial, cycle/broken links, injected size failures, disappearing metadata and overflow were exercised.
+- C Integrate: application consumes scanner records; tests check its actual warning and exit status.
+- D Smoke Check: real executable passed the 1500000-byte fixture and invalid-root exit 1.
+- Both executables compiled with -Werror and no diagnostics.
+- Commits: 21c4bf9 implementation; 69bb869 tests. Both descend from published 32bd6a5.
+- Evidence: docs/evidence/phase1-1.5-linux.txt.
+- Windows scripts, Win32-only code, ACL behavior and current Windows smoke remain unverified.
+
+## 3 November 2026 - Phase 1 / 1.5 E documentation
+
+- Added architecture, Phase 0/1 manuals, learning index, viva notes, demo and native evidence.
+- Updated roadmap and midterm checklist; retained historical progress/testing files.
+- Related implementation/test references: 21c4bf9 and 69bb869; this documentation follows them in history.
+- Stop boundary: this Phase 1 checkpoint. Phases 2-6 and final integration are not implemented.
+- Next: verify remote publication, preserve Windows local edits, run Windows tests and review main integration.

@@ -33,3 +33,11 @@ controlled Windows tests. See testing.md for details.
 - Integrate the verified milestone into main.
 
 Phase 2 has not started.
+
+## Tracking migration - 3 November 2026
+
+This file retains the historical storage checkpoint. DEVELOPMENT_ROADMAP.md
+is now the master tracker and PROGRESS_LOG.md records dated milestones.
+The original 14-phase planning scheme is superseded by DEVELOPMENT PHASE 0-7.
+Implementation 21c4bf9 and tests 69bb869 are native-Linux tested.
+New Windows execution and main integration remain pending.

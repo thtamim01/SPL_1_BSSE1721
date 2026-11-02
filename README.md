@@ -1,2 +1,81 @@
-# SPL_1_BSSE1721
-Software Programming Lab 1 project repository - IIT DU BSSE
+# FolderFlow Guardian
+
+Automated File Organization, Storage Analysis, Versioning and Recovery System.
+SPL-1, IIT, University of Dhaka.
+Student: Md. Tasnimul Hasan Tamim (BSSE1721).
+C++17; primary platform: Windows, VS Code, MSYS2 GCC/G++.
+
+## Current checkpoint
+
+DEVELOPMENT PHASE 1, subphases 1.3/1.4/1.5: modular scanner, structured metadata,
+explicit exclusions/errors and repeatable tests. Existing history is preserved.
+
+The scanner accepts a root, traverses ordinary child folders, returns relative
+paths/type/extension/size/modification metadata, and prints file/folder counts
+and logical byte/decimal KB/MB totals. .git is excluded. Links and non-regular
+entries are skipped. Inaccessible content or measurement failures produce
+issues and partial results instead of silently complete totals.
+
+Indexing/search, rules/moves/undo, duplicates/recovery, versions/chunks and
+snapshots are not implemented.
+
+## Build and test on Windows
+
+Open PowerShell at the repository root with g++ on PATH:
+
+    .\scripts\build.ps1
+    .\scripts\test.ps1
+
+If local script policy blocks execution, use a process-scoped invocation:
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
+
+No global policy change is required. The test script builds the application,
+then the tests, and stops after compilation/test failures. Read PASS/FAIL/SKIP
+separately; unavailable privileges can make link tests SKIP.
+
+Run the application:
+
+    .\build\folderflow.exe
+
+Enter a folder path without surrounding quote characters. A blank entered line
+means the current directory. EOF exits without scanning.
+Exit status: 0 complete, 1 invalid/no input, 2 incomplete.
+Relative output uses forward slashes on all platforms.
+
+## Disposable demonstration
+
+    $fixture = & .\demo\create_fixture.ps1
+    $fixture | .\build\folderflow.exe
+
+Expected: 2 files, 2 folders, 1500000 bytes, 1500.00 KB, 1.50 MB.
+The fixture is uniquely created under TEMP; no personal files are modified.
+
+## Verification boundaries
+
+Fresh Linux GCC 13.3.0 builds passed with -Werror. The runner reported 25 passed,
+0 failed, 0 skipped. The real executable passed the known fixture and invalid
+root. See docs/evidence/phase1-1.5-linux.txt.
+New PowerShell scripts and Windows-specific code have not run in this Linux
+workspace. Current Windows execution remains required.
+
+Windows conservatively skips all reparse points, including cloud placeholders.
+The read-only scanner is not an atomic snapshot or protection against hostile
+concurrent path replacement. Sizes are per-path logical lengths, not physical
+allocation; hard links may count data multiple times. File times are filesystem
+clock values, not yet a portable persistence format. No benchmark is claimed.
+
+## Navigation
+
+- [Master phase tracker](docs/DEVELOPMENT_ROADMAP.md)
+- [Dated progress and commit evidence](docs/PROGRESS_LOG.md)
+- [Four-session board and midterm checklist](docs/MIDTERM_READINESS.md)
+- [Architecture](docs/architecture.md)
+- [Learning manuals](learnings/README.md)
+- [Test instructions](tests/README.md)
+- [Historical manual tests](docs/testing.md)
+- [Viva notes](docs/viva-notes.md)
+
+New branches use phase/subphase IDs. Historical branches/commits remain intact.
+Tested locally, published on a branch, and integrated into main are distinct
+checkpoints.

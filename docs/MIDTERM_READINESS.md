@@ -4,20 +4,22 @@ Budget: four sessions of about two hours (eight hours total). These are relative
 
 ## Observable ten-item checklist
 
-| # | Demonstration item and proof | Audit status |
-| --- | --- | --- |
-| 1 | Repeatable build plus nested scan with controlled counts | IN PROGRESS: historical manual build only; scripts pending |
-| 2 | Structured metadata, correct exact byte/KB/MB totals | IN PROGRESS: sizes published, complete records pending |
-| 3 | Automated scanner tests including invalid roots/exclusions | NOT STARTED |
-| 4 | Create a persistent index, restart and reload it | NOT STARTED |
-| 5 | Correct filename/extension search with no-match cases | NOT STARTED |
-| 6 | Heap-based largest-file results checked against known sizes | NOT STARTED |
-| 7 | Load deterministic extension rules and preview destinations | NOT STARTED |
-| 8 | Reject collisions and paths escaping the chosen root | NOT STARTED |
-| 9 | Safe disposable-folder moves followed by verified undo | NOT STARTED |
-| 10 | Published tested checkpoint, README/manuals and rehearsed 3-5-minute demo | IN PROGRESS: some docs published; integrated demo pending |
+| # | Demonstration item and proof | Status | Evidence / remaining gate |
+| --- | --- | --- | --- |
+| 1 | Repeatable build and known nested counts | TESTED | Native build/real smoke; current Windows run pending |
+| 2 | Structured metadata and exact storage totals | TESTED | Native metadata/failure/boundary checks; Windows pending |
+| 3 | Automated scanner negative/exclusion tests | TESTED | Linux: 25 passed, 0 failed, 0 skipped; Windows counts pending |
+| 4 | Persist an index, restart and reload | NOT STARTED | No implementation |
+| 5 | Name/extension search and no-match handling | NOT STARTED | No implementation |
+| 6 | Heap-based largest-file results | NOT STARTED | No implementation |
+| 7 | Load extension rules and preview destinations | NOT STARTED | No implementation |
+| 8 | Reject collisions and root-escaping plans | NOT STARTED | No organization planner |
+| 9 | Safe moves followed by verified undo | NOT STARTED | No move/undo implementation |
+| 10 | Published checkpoint, manuals and rehearsed demo | IN PROGRESS | Docs prepared; current publication and Windows rehearsal pending |
 
-Verified complete checklist items at audit: 0/10 under these new composite criteria. This does not erase the earlier working scanner/storage features. Every checked item requires linked current evidence; planned work never counts.
+Native technical evidence supports 3/10 checklist items. Current Windows
+midterm-demo readiness remains unverified. This is not a full-project
+completion percentage. Seven checked items remains a target, not a promise.
 
 ## Four-session execution board
 
@@ -48,4 +50,4 @@ This is an ambitious budget. Keep Phase 4 out of the eight-hour commitment unles
 
 ## Full-project separation
 
-Phases 4-6 and final Phase 7 acceptance remain NOT STARTED at audit. Early scanner work is not evidence of duplicate recovery, versioning, chunk reuse or snapshots. No percentage of the four-month project is asserted.
+Phases 4-6 remain NOT STARTED. Phase 7 has early documentation/viva groundwork, but final acceptance remains unmet. Early scanner work is not evidence of duplicate recovery, versioning, chunk reuse or snapshots. No percentage of the four-month project is asserted.

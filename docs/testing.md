@@ -66,3 +66,12 @@ The Windows symbolic-link test was blocked during fixture creation:
 
 The scanner was not run against those links.
 Windows symbolic-link skipping remains unverified.
+
+## DEVELOPMENT PHASE 1 / 1.5 modular checkpoint - 3 November 2026
+
+Implementation: 21c4bf9. Automated tests: 69bb869.
+Fresh Linux/GCC 13.3.0 run: 25 passed, 0 failed, 0 skipped. Both builds used
+-Werror. The real executable passed the known fixture and invalid-root smoke.
+See evidence/phase1-1.5-linux.txt and ../tests/README.md.
+New Windows scripts/Win32 code have not been executed here. Earlier Windows
+results above remain historical evidence, not a new Windows run.
