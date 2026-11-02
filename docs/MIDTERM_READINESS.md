@@ -15,7 +15,7 @@ Budget: four sessions of about two hours (eight hours total). These are relative
 | 7 | Load extension rules and preview destinations | NOT STARTED | No implementation |
 | 8 | Reject collisions and root-escaping plans | NOT STARTED | No organization planner |
 | 9 | Safe moves followed by verified undo | NOT STARTED | No move/undo implementation |
-| 10 | Published checkpoint, manuals and rehearsed demo | IN PROGRESS | Docs prepared; current publication and Windows rehearsal pending |
+| 10 | Published checkpoint, manuals and rehearsed demo | IN PROGRESS | Docs prepared; publication BLOCKED here by credentials; Windows rehearsal pending |
 
 Native technical evidence supports 3/10 checklist items. Current Windows
 midterm-demo readiness remains unverified. This is not a full-project

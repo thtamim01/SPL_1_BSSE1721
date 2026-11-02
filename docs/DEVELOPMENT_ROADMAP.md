@@ -22,7 +22,9 @@ A Develop -> B Verify -> C Integrate -> D Smoke Check -> E Document. Commits fol
 
 Implementation 21c4bf9; tests 69bb869. Native suite: 25 passed, 0 failed,
 0 skipped; real executable smoke passed. These remain local commits until
-remote publication is verified. Main is untouched. No new Windows run is claimed.
+remote publication is verified. Publication is BLOCKED by missing GitHub write
+credentials in this workspace; the guarded bundle handoff is the next action.
+Main is untouched. No new Windows run is claimed.
 
 ## Full tracker
 
@@ -120,7 +122,7 @@ remote publication is verified. Main is untouched. No new Windows run is claimed
 - Learning manual: [Phase 1](../learnings/phase1-scanning.md), section 1.1.
 - Dependencies: Phase 0 applicable acceptance.
 - Known problems: Windows scripts/reparse/ACL/console behavior remains unverified; scan is not atomic.
-- Next action: Verify feature publication, run Windows suite and record actual counts before main integration.
+- Next action: Import the verified Git bundle into a clean Windows checkout, execute the suite, record actual results, and publish through local Git; main integration remains pending.
 - A-E checkpoint: A implemented; B/C/D tested on Linux; E documentation in this checkpoint; Windows execution pending.
 
 ### 1.2 - Recursive scanning
@@ -132,7 +134,7 @@ remote publication is verified. Main is untouched. No new Windows run is claimed
 - Learning manual: [Phase 1](../learnings/phase1-scanning.md), section 1.2.
 - Dependencies: 1.1.
 - Known problems: Windows scripts/reparse/ACL/console behavior remains unverified; scan is not atomic.
-- Next action: Verify feature publication, run Windows suite and record actual counts before main integration.
+- Next action: Import the verified Git bundle into a clean Windows checkout, execute the suite, record actual results, and publish through local Git; main integration remains pending.
 - A-E checkpoint: A implemented; B/C/D tested on Linux; E documentation in this checkpoint; Windows execution pending.
 
 ### 1.3 - Smart exclusions
@@ -144,7 +146,7 @@ remote publication is verified. Main is untouched. No new Windows run is claimed
 - Learning manual: [Phase 1](../learnings/phase1-scanning.md), section 1.3.
 - Dependencies: 1.2.
 - Known problems: Windows scripts/reparse/ACL/console behavior remains unverified; scan is not atomic.
-- Next action: Verify feature publication, run Windows suite and record actual counts before main integration.
+- Next action: Import the verified Git bundle into a clean Windows checkout, execute the suite, record actual results, and publish through local Git; main integration remains pending.
 - A-E checkpoint: A implemented; B/C/D tested on Linux; E documentation in this checkpoint; Windows execution pending.
 
 ### 1.4 - File metadata and storage
@@ -156,7 +158,7 @@ remote publication is verified. Main is untouched. No new Windows run is claimed
 - Learning manual: [Phase 1](../learnings/phase1-scanning.md), section 1.4.
 - Dependencies: 1.3.
 - Known problems: Windows scripts/reparse/ACL/console behavior remains unverified; scan is not atomic.
-- Next action: Verify feature publication, run Windows suite and record actual counts before main integration.
+- Next action: Import the verified Git bundle into a clean Windows checkout, execute the suite, record actual results, and publish through local Git; main integration remains pending.
 - A-E checkpoint: A implemented; B/C/D tested on Linux; E documentation in this checkpoint; Windows execution pending.
 
 ### 1.5 - Modular scanner and automated tests
@@ -168,7 +170,7 @@ remote publication is verified. Main is untouched. No new Windows run is claimed
 - Learning manual: [Phase 1](../learnings/phase1-scanning.md), section 1.5.
 - Dependencies: 1.4.
 - Known problems: Windows scripts/reparse/ACL/console behavior remains unverified; scan is not atomic.
-- Next action: Verify feature publication, run Windows suite and record actual counts before main integration.
+- Next action: Import the verified Git bundle into a clean Windows checkout, execute the suite, record actual results, and publish through local Git; main integration remains pending.
 - A-E checkpoint: A implemented; B/C/D tested on Linux; E documentation in this checkpoint; Windows execution pending.
 
 ## DEVELOPMENT PHASE 2 - Persistent Indexing and Intelligent Search

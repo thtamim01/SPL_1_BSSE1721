@@ -31,3 +31,13 @@
 - Related implementation/test references: 21c4bf9 and 69bb869; this documentation follows them in history.
 - Stop boundary: this Phase 1 checkpoint. Phases 2-6 and final integration are not implemented.
 - Next: verify remote publication, preserve Windows local edits, run Windows tests and review main integration.
+
+## 3 November 2026 - Phase 1 / 1.5 publication gate
+
+- Local checkpoint documentation commit: 99f4357.
+- Attempted a normal non-force push to origin/phase1/1.5-modular-scanner.
+- Result: BLOCKED. Git could not obtain a GitHub username because this workspace has no write credentials; no remote update succeeded.
+- Main and the existing feature/storage-analysis branch remain unchanged.
+- A complete-history Git bundle is provided for import into the existing Windows repository.
+- Next: guarded local import, actual Windows test evidence, then a normal feature-branch push using the student's existing Git authentication.
+- No new Windows test results or remote publication are claimed by this entry.
