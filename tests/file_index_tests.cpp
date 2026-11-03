@@ -61,6 +61,22 @@ int main()
         FileIndex i; i.add(file("a/../nested/a.txt", ".txt"));
         check(i.findByPath("nested/./a.txt") && i.size() == 1);
     });
+    test("allFiles returns every record in path order as copies", [] {
+        FileIndex index;
+        index.add(file("b.txt", ".txt", 20));
+        index.add(file("a.txt", ".txt", 10));
+
+        auto records = index.allFiles();
+
+        check(records.size() == 2);
+        check(records[0].relativePath == fs::path("a.txt"));
+        check(records[1].relativePath == fs::path("b.txt"));
+        check(records[0].sizeBytes == 10);
+        check(records[1].sizeBytes == 20);
+
+        records[0].sizeBytes = 999;
+        check(index.findByPath("a.txt")->sizeBytes == 10);
+    });
     test("returned pointer survives additional insertions", [] {
         FileIndex i; i.add(file("first.txt", ".txt", 1)); auto first = i.findByPath("first.txt");
         for (int n = 0; n < 100; ++n) i.add(file("item" + std::to_string(n), "", n));

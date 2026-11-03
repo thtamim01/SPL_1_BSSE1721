@@ -76,4 +76,17 @@ std::vector<const FileMetadata*> FileIndex::findByExtension(const std::string& e
     }
     return matches;
 }
+
+std::vector<FileMetadata> FileIndex::allFiles() const
+{
+    std::vector<FileMetadata> records;
+    records.reserve(filesByPath_.size());
+
+    for (const auto& item : filesByPath_)
+    {
+        records.push_back(item.second);
+    }
+
+    return records;
+}
 }

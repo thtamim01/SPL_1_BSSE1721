@@ -20,6 +20,8 @@ public:
     const FileMetadata* findByPath(const fs::path& relativePath) const;
     std::vector<const FileMetadata*> findByExtension(const std::string& extension) const;
     std::size_t size() const { return filesByPath_.size(); }
+    // Returns copies of all indexed records in normalized path order.
+    std::vector<FileMetadata> allFiles() const;
 
 private:
     static std::string pathKey(const fs::path& path);
