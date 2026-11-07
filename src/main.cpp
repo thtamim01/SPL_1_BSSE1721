@@ -1,8 +1,65 @@
 #include "application.hpp"
+#include "file_index.hpp"
+#include "scanner.hpp"
 
 #include <iostream>
+#include <string>
 
-int main()
+int main(int argc, char* argv[])
 {
-    return folderflow::runApplication(std::cin, std::cout);
+    using namespace folderflow;
+
+    if (argc == 1)
+        return runApplication(std::cin, std::cout);
+
+    const std::string command = argv[1];
+    FileIndex index;
+
+    if (command == "--save-index" && argc == 4)
+    {
+        const auto scan = FileScanner{}.scan(fs::u8path(argv[2]));
+        if (!scan.rootValid)
+        {
+            std::cerr << "Invalid folder path.\n";
+            return 1;
+        }
+
+        if (!scan.complete())
+        {
+            std::cerr << "Scan incomplete. Index was not saved.\n";
+            return 2;
+        }
+
+        for (const auto& entry : scan.entries)
+            index.add(entry);
+
+        if (!index.saveToFile(fs::u8path(argv[3])))
+        {
+            std::cerr << "Could not save the index.\n";
+            return 1;
+        }
+
+        std::cout << "Saved " << index.size() << " file(s).\n";
+        return 0;
+    }
+
+    if (command == "--load-index" && argc == 3)
+    {
+        if (!index.loadFromFile(fs::u8path(argv[2])))
+        {
+            std::cerr << "Could not load the index.\n";
+            return 1;
+        }
+
+        std::cout << "Loaded " << index.size() << " file(s).\n";
+        for (const auto& entry : index.allFiles())
+            std::cout << entry.relativePath.generic_u8string() << '\n';
+
+        return 0;
+    }
+
+    std::cerr << "Usage:\n"
+              << "  folderflow --save-index <folder> <index-file>\n"
+              << "  folderflow --load-index <index-file>\n";
+    return 1;
 }
