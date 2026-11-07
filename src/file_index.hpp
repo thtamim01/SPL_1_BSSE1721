@@ -19,6 +19,7 @@ public:
     // Returned pointers remain valid until this index is destroyed.
     const FileMetadata* findByPath(const fs::path& relativePath) const;
     std::vector<const FileMetadata*> findByExtension(const std::string& extension) const;
+    std::vector<const FileMetadata*> findByName(const std::string& namePart) const;
     std::size_t size() const { return filesByPath_.size(); }
     // Returns copies of all indexed records in normalized path order.
     std::vector<FileMetadata> allFiles() const;

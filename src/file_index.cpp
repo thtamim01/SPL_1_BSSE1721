@@ -77,6 +77,24 @@ std::vector<const FileMetadata*> FileIndex::findByExtension(const std::string& e
     }
         return matches;
 }
+std::vector<const FileMetadata*> FileIndex::findByName(const std::string& namePart) const
+{
+    std::vector<const FileMetadata*> matches;
+
+    if (namePart.empty())
+        return matches;
+
+    for (const auto& item : filesByPath_)
+    {
+        const FileMetadata& file = item.second;
+        const std::string filename = file.relativePath.filename().generic_u8string();
+
+        if (filename.find(namePart) != std::string::npos)
+            matches.push_back(&file);
+    }
+
+    return matches;
+}
 
 std::vector<FileMetadata> FileIndex::allFiles() const
 {

@@ -102,9 +102,28 @@ int main(int argc, char* argv[])
         std::cout << "Changed: " << changed << ", Missing: " << missing << '\n';
         return 0;
     }
+        if (command == "--find-name" && argc == 4)
+    {
+        folderflow::FileIndex searchIndex;
+        if (!searchIndex.loadFromFile(fs::u8path(argv[2])))
+        {
+            std::cerr << "Could not load the index.\n";
+            return 1;
+        }
+
+        const auto matches = searchIndex.findByName(argv[3]);
+        for (const auto* file : matches)
+        {
+            std::cout << file->relativePath.generic_u8string() << '\n';
+        }
+
+        std::cout << "Matches: " << matches.size() << '\n';
+        return 0;
+    }
     std::cerr << "Usage:\n"
               << "  folderflow --save-index <folder> <index-file>\n"
               << "  folderflow --load-index <index-file>\n"
-              << "  folderflow --check-index <folder> <index-file>\n";
+              << "  folderflow --check-index <folder> <index-file>\n"
+              << "  folderflow --find-name <index-file> <name-part>\n";
     return 1;
 }

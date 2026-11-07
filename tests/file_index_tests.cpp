@@ -102,6 +102,18 @@ int main()
         std::error_code error;
         fs::remove(savedIndex, error);
     });
+        test("findByName matches partial filenames and handles no match", [] {
+        FileIndex index;
+        check(index.add(file("docs/report.txt", ".txt", 10)));
+        check(index.add(file("old_report.docx", ".docx", 20)));
+        check(index.add(file("reports/notes.txt", ".txt", 30)));
+
+        const auto matches = index.findByName("report");
+        check(matches.size() == 2);
+        check(matches[0]->relativePath == fs::path("docs/report.txt"));
+        check(matches[1]->relativePath == fs::path("old_report.docx"));
+        check(index.findByName("missing").empty());
+    });
     std::cout << "INDEX RESULT: " << passed << " passed, " << failed << " failed\n";
     return failed == 0 ? 0 : 1;
 }
