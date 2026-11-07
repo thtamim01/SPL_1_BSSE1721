@@ -22,6 +22,7 @@ public:
     std::size_t size() const { return filesByPath_.size(); }
     // Returns copies of all indexed records in normalized path order.
     std::vector<FileMetadata> allFiles() const;
+    bool saveToFile(const fs::path& filePath) const;
 
 private:
     static std::string pathKey(const fs::path& path);
