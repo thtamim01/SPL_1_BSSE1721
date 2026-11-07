@@ -82,6 +82,26 @@ int main()
         for (int n = 0; n < 100; ++n) i.add(file("item" + std::to_string(n), "", n));
         check(first && first->sizeBytes == 1 && i.size() == 101);
     });
+        test("index saves and reloads", [] {
+        const fs::path savedIndex =
+            fs::temp_directory_path() / "folderflow_index_test.txt";
+
+        FileIndex original;
+        check(original.add(file("a.txt", ".txt", 10)));
+        check(original.add(file("nested/b.log", ".log", 20)));
+        check(original.saveToFile(savedIndex));
+
+        FileIndex restored;
+        check(restored.loadFromFile(savedIndex));
+
+        check(restored.size() == 2);
+        check(restored.findByPath("a.txt")->sizeBytes == 10);
+        check(restored.findByPath("nested/b.log")->sizeBytes == 20);
+        check(restored.findByExtension("txt").size() == 1);
+
+        std::error_code error;
+        fs::remove(savedIndex, error);
+    });
     std::cout << "INDEX RESULT: " << passed << " passed, " << failed << " failed\n";
     return failed == 0 ? 0 : 1;
 }

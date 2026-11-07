@@ -23,6 +23,7 @@ public:
     // Returns copies of all indexed records in normalized path order.
     std::vector<FileMetadata> allFiles() const;
     bool saveToFile(const fs::path& filePath) const;
+    bool loadFromFile(const fs::path& filePath);
 
 private:
     static std::string pathKey(const fs::path& path);

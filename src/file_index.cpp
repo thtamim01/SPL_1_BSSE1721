@@ -1,5 +1,6 @@
 #include "file_index.hpp"
-
+#include <fstream>
+#include <iomanip>
 #include <algorithm>
 #include <cctype>
 
@@ -74,7 +75,7 @@ std::vector<const FileMetadata*> FileIndex::findByExtension(const std::string& e
         const auto file = filesByPath_.find(key);
         if (file != filesByPath_.end()) matches.push_back(&file->second);
     }
-    return matches;
+        return matches;
 }
 
 std::vector<FileMetadata> FileIndex::allFiles() const
@@ -88,5 +89,100 @@ std::vector<FileMetadata> FileIndex::allFiles() const
     }
 
     return records;
+}
+
+bool FileIndex::saveToFile(const fs::path& filePath) const
+{
+    std::ofstream output(filePath, std::ios::binary | std::ios::trunc);
+    if (!output)
+        return false;
+
+    output << "FOLDERFLOW_INDEX 1\n";
+
+    for (const auto& item : filesByPath_)
+    {
+        const FileMetadata& file = item.second;
+        const bool hasSize = file.sizeBytes.has_value();
+        const bool hasModifiedTime = file.modifiedTime.has_value();
+
+        output << std::quoted(file.relativePath.generic_u8string()) << ' '
+               << std::quoted(file.extension) << ' '
+               << hasSize << ' '
+               << (hasSize ? *file.sizeBytes : 0) << ' '
+               << hasModifiedTime << ' '
+               << (hasModifiedTime
+                       ? file.modifiedTime->time_since_epoch().count()
+                       : 0)
+               << '\n';
+
+        if (!output)
+            return false;
+    }
+
+    output.flush();
+    return output.good();
+}
+bool FileIndex::loadFromFile(const fs::path& filePath)
+{
+    std::ifstream input(filePath, std::ios::binary);
+    std::string header;
+
+    if (!std::getline(input, header) || header != "FOLDERFLOW_INDEX 1")
+        return false;
+
+    FileIndex loaded;
+    using FileDuration = fs::file_time_type::duration;
+
+    while (input.peek() != std::char_traits<char>::eof())
+    {
+        std::string path;
+        FileMetadata file;
+        int hasSize = 0;
+        int hasModifiedTime = 0;
+        std::uintmax_t size = 0;
+        FileDuration::rep ticks = 0;
+
+        if (input.peek() != '"' || !(input >> std::quoted(path)))
+            return false;
+
+        input >> std::ws;
+        if (input.peek() != '"' ||
+            !(input >> std::quoted(file.extension) >> hasSize))
+            return false;
+
+        input >> std::ws;
+        if (input.peek() == '-' || !(input >> size >> hasModifiedTime >> ticks))
+            return false;
+
+        if ((hasSize != 0 && hasSize != 1) ||
+            (hasModifiedTime != 0 && hasModifiedTime != 1) ||
+            input.get() != '\n')
+            return false;
+
+        try
+        {
+            file.relativePath = fs::u8path(path);
+        }
+        catch (const fs::filesystem_error&)
+        {
+            return false;
+        }
+
+        file.kind = EntryKind::RegularFile;
+        if (hasSize)
+            file.sizeBytes = size;
+        if (hasModifiedTime)
+            file.modifiedTime = fs::file_time_type{FileDuration{ticks}};
+
+        if (loaded.findByPath(file.relativePath) || !loaded.add(file))
+            return false;
+    }
+
+    if (input.bad() || !input.eof())
+        return false;
+
+    filesByPath_.swap(loaded.filesByPath_);
+    pathsByExtension_.swap(loaded.pathsByExtension_);
+    return true;
 }
 }
