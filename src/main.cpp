@@ -57,9 +57,54 @@ int main(int argc, char* argv[])
 
         return 0;
     }
+    if (command == "--check-index" && argc == 4)
+    {
+        if (!index.loadFromFile(fs::u8path(argv[3])))
+        {
+            std::cerr << "Could not load the index.\n";
+            return 1;
+        }
 
+        const auto scan = FileScanner{}.scan(fs::u8path(argv[2]));
+        if (!scan.rootValid)
+        {
+            std::cerr << "Invalid folder path.\n";
+            return 1;
+        }
+        if (!scan.complete())
+        {
+            std::cerr << "Scan incomplete. Cannot compare the index reliably.\n";
+            return 2;
+        }
+
+        FileIndex current;
+        for (const auto& entry : scan.entries)
+            current.add(entry);
+
+        std::size_t changed = 0;
+        std::size_t missing = 0;
+        for (const auto& saved : index.allFiles())
+        {
+            const auto* now = current.findByPath(saved.relativePath);
+            if (!now)
+            {
+                std::cout << "[MISSING] " << saved.relativePath.generic_u8string() << '\n';
+                ++missing;
+            }
+            else if (saved.sizeBytes != now->sizeBytes ||
+                     saved.modifiedTime != now->modifiedTime)
+            {
+                std::cout << "[CHANGED] " << saved.relativePath.generic_u8string() << '\n';
+                ++changed;
+            }
+        }
+
+        std::cout << "Changed: " << changed << ", Missing: " << missing << '\n';
+        return 0;
+    }
     std::cerr << "Usage:\n"
               << "  folderflow --save-index <folder> <index-file>\n"
-              << "  folderflow --load-index <index-file>\n";
+              << "  folderflow --load-index <index-file>\n"
+              << "  folderflow --check-index <folder> <index-file>\n";
     return 1;
 }
