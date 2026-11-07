@@ -120,6 +120,18 @@ int main(int argc, char* argv[])
         std::cout << "Matches: " << matches.size() << '\n';
         return 0;
     }
+        if (command == "--index-summary" && argc == 3)
+    {
+        folderflow::FileIndex summaryIndex;
+        if (!summaryIndex.loadFromFile(fs::u8path(argv[2])))
+        {
+            std::cerr << "Could not load the index.\n";
+            return 1;
+        }
+
+        std::cout << "Total files: " << summaryIndex.size() << '\n';
+        return 0;
+    }
     std::cerr << "Usage:\n"
               << "  folderflow --save-index <folder> <index-file>\n"
               << "  folderflow --load-index <index-file>\n"
