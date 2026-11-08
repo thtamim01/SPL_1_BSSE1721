@@ -1,3 +1,6 @@
+#include <sstream>
+#include <fstream>
+#include <iomanip>
 #ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -25,6 +28,257 @@ int main(int argc, char* argv[])
         return runApplication(std::cin, std::cout);
 
     const std::string command = argv[1];
+    #ifdef _WIN32
+    const auto plainDirectoryChain = [](fs::path directory)
+    {
+        while (!directory.empty())
+        {
+            const DWORD attributes = GetFileAttributesW(directory.c_str());
+            if (attributes == INVALID_FILE_ATTRIBUTES ||
+                !(attributes & FILE_ATTRIBUTE_DIRECTORY) ||
+                (attributes & FILE_ATTRIBUTE_REPARSE_POINT))
+                return false;
+
+            const auto parent = directory.parent_path();
+            if (parent == directory)
+                break;
+            directory = parent;
+        }
+        return true;
+    };
+
+    #endif
+
+    if (command == "--undo")
+    {
+        if (argc != 3)
+        {
+            std::cerr << "Usage: folderflow --undo <folder>\n";
+            return 1;
+        }
+
+#ifdef _WIN32
+        std::error_code ec;
+        const auto root = fs::absolute(fs::u8path(argv[2]), ec).lexically_normal();
+        const auto journalDirectory = root / ".folderflow-undo";
+        const auto journalPath = journalDirectory / "moves.log";
+        if (ec || !plainDirectoryChain(journalDirectory))
+        {
+            std::cerr << "No accessible move journal for this folder.\n";
+            return 1;
+        }
+
+        const DWORD journalAttributes = GetFileAttributesW(journalPath.c_str());
+        if (journalAttributes == INVALID_FILE_ATTRIBUTES ||
+            (journalAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)))
+        {
+            std::cerr << "Cannot open the move journal safely.\n";
+            return 1;
+        }
+
+        std::ifstream input(journalPath, std::ios::binary);
+        std::string line;
+        if (!std::getline(input, line) || line != "FOLDERFLOW_MOVE_JOURNAL_V1")
+        {
+            std::cerr << "Unrecognized move journal.\n";
+            return 1;
+        }
+
+        struct MoveRecord
+        {
+            fs::path original;
+            fs::path destination;
+        };
+
+        const auto safeRelativePath = [](const fs::path& path)
+        {
+            if (path.empty() || path.has_root_path())
+                return false;
+
+            for (const auto& component : path)
+            {
+                const auto name = component.native();
+                if (name.empty() || component == "." || component == ".." ||
+                    name.find_first_of(L"<>:\"/\\|?*") != std::wstring::npos ||
+                    name.back() == L'.' || name.back() == L' ')
+                    return false;
+            }
+            return true;
+        };
+
+        std::vector<MoveRecord> moves;
+        std::vector<fs::path> createdFolders;
+        bool cleanupRecorded = false;
+        bool undoStarted = false;
+        while (std::getline(input, line))
+        {
+            if (cleanupRecorded)
+            {
+                std::cerr << "Unexpected record after cleanup marker.\n";
+                return 2;
+            }
+
+            if (line == "CLEANUP" && moves.empty() && !createdFolders.empty())
+            {
+                cleanupRecorded = true;
+                continue;
+            }
+
+            if (!undoStarted && line.compare(0, 8, "CREATED ") == 0)
+            {
+                std::istringstream folderRecord(line.substr(8));
+                std::string name;
+                if (!(folderRecord >> std::quoted(name)) || !(folderRecord >> std::ws).eof())
+                {
+                    std::cerr << "Invalid folder record.\n";
+                    return 2;
+                }
+
+                const auto folder = fs::u8path(name);
+                if (!safeRelativePath(folder) || folder.has_parent_path())
+                {
+                    std::cerr << "Invalid cleanup path.\n";
+                    return 2;
+                }
+
+                createdFolders.push_back(folder);
+                continue;
+            }
+
+            if (line == "UNDONE" && !moves.empty())
+            {
+                undoStarted = true;
+                moves.pop_back();
+                continue;
+            }
+
+            std::istringstream record(line);
+            std::string tag, originalText, destinationText, result;
+            if (undoStarted || !(record >> tag) || tag != "PENDING" ||
+                !(record >> std::quoted(originalText) >> std::quoted(destinationText)) ||
+                !(record >> std::ws).eof() || !std::getline(input, result) ||
+                (result != "MOVED" && result != "FAILED"))
+            {
+                std::cerr << "Incomplete or invalid journal. Undo stopped.\n";
+                return 2;
+            }
+
+            if (result == "MOVED")
+            {
+                const auto original = fs::u8path(originalText);
+                const auto destination = fs::u8path(destinationText);
+                if (!safeRelativePath(original) || !safeRelativePath(destination) ||
+                    original.filename() != destination.filename())
+                {
+                    std::cerr << "Invalid paths in the move journal.\n";
+                    return 2;
+                }
+                moves.push_back({original, destination});
+            }
+        }
+
+        if (input.bad() || !input.eof())
+        {
+            std::cerr << "Cannot read the complete move journal.\n";
+            return 2;
+        }
+        input.close();
+
+        if (moves.empty() && (createdFolders.empty() || cleanupRecorded))
+        {
+            std::cout << "Nothing to undo.\n";
+            return 0;
+        }
+
+        std::ofstream progress(journalPath, std::ios::binary | std::ios::app);
+        if (!progress)
+        {
+            std::cerr << "Cannot update the move journal. Undo stopped.\n";
+            return 2;
+        }
+
+        while (!moves.empty())
+        {
+            const auto& move = moves.back();
+            const auto original = root / move.original;
+            const auto destination = root / move.destination;
+            if (!plainDirectoryChain(original.parent_path()) ||
+                !plainDirectoryChain(destination.parent_path()))
+            {
+                std::cerr << "Undo blocked by a missing or unsafe folder.\n";
+                return 2;
+            }
+
+            const DWORD attributes = GetFileAttributesW(destination.c_str());
+            if (attributes == INVALID_FILE_ATTRIBUTES ||
+                (attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)))
+            {
+                std::cerr << "Undo blocked: moved file is missing or unsafe.\n";
+                return 2;
+            }
+
+            const bool isJournal = fs::equivalent(destination, journalPath, ec);
+            if (ec || isJournal)
+            {
+                std::cerr << "Undo blocked: cannot verify the moved file.\n";
+                return 2;
+            }
+
+            if (!MoveFileExW(destination.c_str(), original.c_str(), 0))
+            {
+                const DWORD error = GetLastError();
+                std::cerr << "Undo blocked at " << move.original.generic_u8string()
+                          << " (Windows error " << error << "). Record kept.\n";
+                return 2;
+            }
+
+            progress << "UNDONE\n";
+            progress.flush();
+            if (!progress)
+            {
+                std::cerr << "File restored, but the journal update failed. "
+                             "Inspect the paths before retrying.\n";
+                return 2;
+            }
+
+            std::cout << "RESTORED: " << move.destination.generic_u8string()
+                      << " -> " << move.original.generic_u8string() << '\n';
+            moves.pop_back();
+        }
+
+        if (!createdFolders.empty() && !cleanupRecorded)
+        {
+            progress << "CLEANUP\n" << std::flush;
+            if (!progress)
+            {
+                std::cerr << "Cannot record cleanup. Folders kept.\n";
+                return 2;
+            }
+
+            for (const auto& folder : createdFolders)
+            {
+                const auto candidate = root / folder;
+                if (!plainDirectoryChain(candidate))
+                    continue;
+
+                const bool isJournalDirectory = fs::equivalent(candidate, journalDirectory, ec);
+                if (ec || isJournalDirectory)
+                    continue;
+
+                if (RemoveDirectoryW(candidate.c_str()))
+                    std::cout << "REMOVED EMPTY FOLDER: " << folder.generic_u8string() << '\n';
+                else
+                    std::cout << "KEPT FOLDER: " << folder.generic_u8string() << '\n';
+            }
+        }
+
+        return 0;
+#else
+        std::cerr << "--undo is currently supported on Windows only.\n";
+        return 1;
+#endif
+    }
+
     FileIndex index;
     if ((command == "--evaluate-rules" || command == "--dry-run" || command == "--organize") &&
     argc == 4)
@@ -159,30 +413,32 @@ int main(int argc, char* argv[])
                 return 1;
             }
 
-            const auto plainDirectoryChain = [](fs::path directory)
-            {
-                while (!directory.empty())
-                {
-                    const DWORD attributes = GetFileAttributesW(directory.c_str());
-                    if (attributes == INVALID_FILE_ATTRIBUTES ||
-                        !(attributes & FILE_ATTRIBUTE_DIRECTORY) ||
-                        (attributes & FILE_ATTRIBUTE_REPARSE_POINT))
-                        return false;
-
-                    const auto parent = directory.parent_path();
-                    if (parent == directory)
-                        break;
-                    directory = parent;
-                }
-                return true;
-            };
-
             if (!plainDirectoryChain(root))
             {
                 std::cerr << "Selected folder has an inaccessible or linked parent.\n";
                 return 1;
             }
 
+            const auto journalDirectory = root / ".folderflow-undo";
+            std::ofstream journal;
+            const auto openJournal = [&]()
+            {
+                if (journal.is_open())
+                    return static_cast<bool>(journal);
+
+                if (!fs::create_directory(journalDirectory, ec))
+                {
+                    std::cerr << "Cannot create the move journal. "
+                                 "An earlier journal may already exist.\n";
+                    return false;
+                }
+
+                journal.open(journalDirectory / "moves.log", std::ios::binary);
+                journal << "FOLDERFLOW_MOVE_JOURNAL_V1\n" << std::flush;
+                if (!journal)
+                    std::cerr << "Cannot write the move journal.\n";
+                return static_cast<bool>(journal);
+            };
             bool failed = false;
             for (const auto& item : destinations)
             {
@@ -224,7 +480,19 @@ int main(int argc, char* argv[])
                     const DWORD error = GetLastError();
                     if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND)
                     {
-                        fs::create_directory(targetFolder, ec);
+                        if (!openJournal())
+                            return 2;
+                        const bool created = fs::create_directory(targetFolder, ec);
+                        if (created)
+                        {
+                            journal << "CREATED " << std::quoted(folder.generic_u8string())
+                                    << '\n' << std::flush;
+                            if (!journal)
+                            {
+                                std::cerr << "Cannot record the new folder. Organization stopped.\n";
+                                return 2;
+                            }
+                        }
                         if (ec)
                         {
                             std::cerr << "FAILED: cannot create " << folder.generic_u8string()
@@ -247,9 +515,33 @@ int main(int argc, char* argv[])
                     continue;
                 }
 
-                if (!MoveFileExW(source.c_str(), target.c_str(), 0))
+                if (!openJournal())
+                    return 2;
+
+                journal << "PENDING " << std::quoted(group.sources.front())
+                        << ' ' << std::quoted(group.displayPath) << '\n';
+                journal.flush();
+                if (!journal)
                 {
-                    const DWORD error = GetLastError();
+                    std::cerr << "Cannot save the move record. Move stopped.\n";
+                    return 2;
+                }
+
+                const bool moved = MoveFileExW(source.c_str(), target.c_str(), 0) != 0;
+                const DWORD error = moved ? ERROR_SUCCESS : GetLastError();
+
+                journal << (moved ? "MOVED\n" : "FAILED\n");
+                journal.flush();
+                if (!journal)
+                {
+                    std::cerr << "Cannot save the move result for "
+                              << group.sources.front() << " -> " << group.displayPath
+                              << ". Inspect the paths before retrying.\n";
+                    return 2;
+                }
+
+                if (!moved)
+                {
                     std::cerr << "FAILED: " << group.sources.front()
                               << " (Windows error " << error << ")\n";
                     failed = true;
