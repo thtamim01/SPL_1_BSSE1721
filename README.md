@@ -79,3 +79,23 @@ clock values, not yet a portable persistence format. No benchmark is claimed.
 New branches use phase/subphase IDs. Historical branches/commits remain intact.
 Tested locally, published on a branch, and integrated into main are distinct
 checkpoints.
+## Saved index demo
+
+After building FolderFlow Guardian, run these commands in PowerShell from the project folder.
+
+```powershell
+$demo = New-Item -ItemType Directory -Path (Join-Path $env:TEMP ("folderflow-demo-" + [guid]::NewGuid()))
+$files = New-Item -ItemType Directory -Path (Join-Path $demo.FullName "files")
+Set-Content -Path (Join-Path $files.FullName "report.txt") -Value "Sample report"
+$demoIndex = Join-Path $demo.FullName "index.txt"
+
+.\build\folderflow.exe --save-index "$($files.FullName)" "$demoIndex"
+.\build\folderflow.exe --load-index "$demoIndex"
+.\build\folderflow.exe --find-name "$demoIndex" "report"
+.\build\folderflow.exe --index-summary "$demoIndex"
+.\build\folderflow.exe --check-index "$($files.FullName)" "$demoIndex"
+```
+
+The search should show `report.txt` and `Matches: 1`. The summary should
+show `Total files: 1`. The final command compares the folder with the
+saved index and should show `Changed: 0, Missing: 0`.
