@@ -1,12 +1,14 @@
-
+#include "rule_config.hpp"
 #include "file_index.hpp"
 #include "rule_config.hpp"
 #include "application.hpp"
 #include "file_index.hpp"
 #include "scanner.hpp"
-
+#include <cctype>
 #include <iostream>
 #include <string>
+#include <map>
+#include <vector>
 
 int main(int argc, char* argv[])
 {
@@ -17,6 +19,100 @@ int main(int argc, char* argv[])
 
     const std::string command = argv[1];
     FileIndex index;
+       if (command == "--evaluate-rules" && argc == 4)
+    {
+        const auto config = loadExtensionRules(fs::u8path(argv[3]));
+        if (!config.error.empty())
+        {
+            std::cerr << config.error << '\n';
+            return 1;
+        }
+
+        const auto scan = FileScanner{}.scan(fs::u8path(argv[2]));
+        if (!scan.rootValid)
+        {
+            std::cerr << "Invalid folder path.\n";
+            return 1;
+        }
+        if (!scan.complete())
+        {
+            std::cerr << "Scan incomplete. Rule evaluation stopped.\n";
+            return 2;
+        }
+
+        struct DestinationGroup
+        {
+            std::string displayPath;
+            std::vector<std::string> sources;
+        };
+
+        std::map<std::string, DestinationGroup> destinations;
+
+        for (const auto& entry : scan.entries)
+        {
+            if (entry.kind != EntryKind::RegularFile)
+                continue;
+
+            std::string extension = entry.extension;
+            for (char& ch : extension)
+            {
+                ch = static_cast<char>(
+                    std::tolower(static_cast<unsigned char>(ch)));
+            }
+
+            const ExtensionRule* match = nullptr;
+            for (const auto& rule : config.rules)
+            {
+                if (rule.extension == extension)
+                {
+                    match = &rule;
+                    break;
+                }
+            }
+
+            std::cout << entry.relativePath.generic_u8string();
+
+            if (match)
+            {
+                const auto destination =
+                    match->destination / entry.relativePath.filename();
+                const std::string destinationPath =
+                    destination.generic_u8string();
+
+                std::string destinationKey = destinationPath;
+                for (char& ch : destinationKey)
+                {
+                    if (ch >= 'A' && ch <= 'Z')
+                        ch = static_cast<char>(ch - 'A' + 'a');
+                }
+
+                auto& group = destinations[destinationKey];
+                if (group.sources.empty())
+                    group.displayPath = destinationPath;
+
+                group.sources.push_back(
+                    entry.relativePath.generic_u8string());
+
+                std::cout << " -> " << destinationPath << '\n';
+            }
+            else
+            {
+                std::cout << " -> no matching rule\n";
+            }
+        }
+
+        for (const auto& [key, group] : destinations)
+        {
+            if (group.sources.size() < 2)
+                continue;
+
+            std::cout << "Conflict: " << group.displayPath << '\n';
+            for (const auto& source : group.sources)
+                std::cout << "  - " << source << '\n';
+        }
+
+        return 0;
+    }
     if (command == "--check-rules" && argc == 3)
     {
          const auto result =
