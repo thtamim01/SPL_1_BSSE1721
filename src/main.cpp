@@ -1,3 +1,10 @@
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#endif
+
 #include "rule_config.hpp"
 #include "file_index.hpp"
 #include "rule_config.hpp"
@@ -19,7 +26,8 @@ int main(int argc, char* argv[])
 
     const std::string command = argv[1];
     FileIndex index;
-       if (command == "--evaluate-rules" && argc == 4)
+    if ((command == "--evaluate-rules" || command == "--dry-run") &&
+    argc == 4)
     {
         const auto config = loadExtensionRules(fs::u8path(argv[3]));
         if (!config.error.empty())
@@ -93,7 +101,36 @@ int main(int argc, char* argv[])
                 group.sources.push_back(
                     entry.relativePath.generic_u8string());
 
-                std::cout << " -> " << destinationPath << '\n';
+#ifdef _WIN32
+                if (command == "--dry-run")
+                {
+                    const auto parent = (scan.root / destination).parent_path();
+                    const DWORD attributes = GetFileAttributesW(parent.c_str());
+                    if (attributes != INVALID_FILE_ATTRIBUTES &&
+                        (attributes & FILE_ATTRIBUTE_REPARSE_POINT))
+                    {
+                        std::cout << " -> " << destinationPath
+                                  << " [SKIP: destination folder is a junction or other reparse point]\n";
+                        continue;
+                    }
+                }
+#endif
+                std::cout << " -> " << destinationPath;
+
+                if (command == "--dry-run")
+                {
+                    std::error_code ec;
+                    const bool occupied = fs::exists(scan.root / destination, ec);
+
+                    if (ec)
+                        std::cout << " [SKIP: cannot check destination]";
+                    else if (occupied)
+                        std::cout << " [SKIP: destination already exists]";
+                    else
+                        std::cout << " [DRY RUN: move proposed]";
+                }
+
+                std::cout << '\n';
             }
             else
             {
