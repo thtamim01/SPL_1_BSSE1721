@@ -1,0 +1,37 @@
+DEVELOPMENT PHASE 1 / 1.5 - actual Windows execution
+Timestamp with local offset: 2026-11-03T02:44:44.0713628+06:00
+Source checkpoint: 8999f4b766155a4e5aa64a0e0df405bd24ca34f8
+Operating system: Microsoft Windows NT 10.0.26200.0
+PowerShell: 5.1.26100.9711
+Compiler: g++.exe (Rev5, Built by MSYS2 project) 16.1.0
+This file contains actual output from scripts/test.ps1.
+Skipped fixtures are not passes.
+
+BUILD SUCCESSFUL: C:\Users\abdra\Documents\GitHub\SPL_1_BSSE1721\build\folderflow.exe
+PASS 1.1 empty selected directory
+PASS 1.1 nonexistent root rejected
+PASS 1.1 file root rejected
+PASS 1.1 empty API path rejected
+PASS 1.2 nested counts and relative paths
+PASS 1.2 deep traversal without recursive calls
+PASS 1.3 root and nested git directories excluded
+PASS 1.3 git pointer file and git-selected roots protected
+SKIP 1.3 external file symlink skipped: Link fixture unavailable: Function not implemented
+SKIP 1.3 directory cycle and external directory links skipped: Link fixture unavailable: Function not implemented
+SKIP 1.3 broken link skipped: Link fixture unavailable: Function not implemented
+SKIP 1.3 symbolic-link root rejected including trailing separator: Link fixture unavailable: Function not implemented
+SKIP 1.3 special FIFO entry skipped: POSIX FIFO fixture is not available on Windows.
+SKIP 1.3 real permission denial reported and sibling scanning continues: This account can still read the permission-restricted directory.
+PASS 1.4 extension, type, size and modification records
+PASS 1.4 zero-byte and extensionless files preserved
+PASS 1.4 path with spaces and Unicode filename
+PASS 1.4 injected size error excludes sentinel and retains good file
+PASS 1.4 disappearing file reports metadata issue
+PASS 1.4 total-byte overflow is detected
+PASS 1.5 repeatable sorted records and fresh state
+PASS 1.5 integrated CLI exact decimal summary
+PASS 1.5 integrated CLI invalid input and EOF
+PASS 1.5 integrated CLI partial scan warning and exit status
+PASS 1.5 blank interactive line selects controlled current directory
+
+RESULT: 19 passed, 0 failed, 6 skipped

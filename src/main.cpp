@@ -1,69 +1,141 @@
+#include "application.hpp"
+#include "file_index.hpp"
+#include "scanner.hpp"
 
 #include <iostream>
-#include <filesystem>
 #include <string>
-using namespace std;
 
-namespace fs = std::filesystem;
-
-int main()
+int main(int argc, char* argv[])
 {
-    cout << "FolderFlow Guardian" << endl;
-    cout << "SPL-1 Project" << endl;
+    using namespace folderflow;
 
-    string folderPath;
+    if (argc == 1)
+        return runApplication(std::cin, std::cout);
 
-    cout << "\nEnter folder path: ";
-    getline(cin, folderPath);
+    const std::string command = argv[1];
+    FileIndex index;
 
-    if (folderPath.empty())
-        folderPath = ".";
-
-    try
+    if (command == "--save-index" && argc == 4)
     {
-        if (!fs::exists(folderPath) || !fs::is_directory(folderPath))
+        const auto scan = FileScanner{}.scan(fs::u8path(argv[2]));
+        if (!scan.rootValid)
         {
-            cout << "Invalid folder path!" << endl;
+            std::cerr << "Invalid folder path.\n";
             return 1;
         }
 
-        int files = 0;
-        int folders = 0;
-
-       
-    for (fs::recursive_directory_iterator it(folderPath, fs::directory_options::skip_permission_denied), end;
-     it != end; ++it)
-    {
-        const auto& entry = *it;
-
-        if (entry.is_directory() && entry.path().filename() == ".git")
+        if (!scan.complete())
         {
-        it.disable_recursion_pending();
-        continue;
+            std::cerr << "Scan incomplete. Index was not saved.\n";
+            return 2;
         }
 
-            if (entry.is_directory())
-            {
-                cout << "[FOLDER] ";
-                folders++;
-            }
-            else
-            {
-                cout << "[FILE] ";
-                files++;
-            }
+        for (const auto& entry : scan.entries)
+            index.add(entry);
 
-            cout << entry.path().lexically_relative(folderPath).string() << endl;
+        if (!index.saveToFile(fs::u8path(argv[3])))
+        {
+            std::cerr << "Could not save the index.\n";
+            return 1;
         }
 
-        cout << "\nTotal Files: " << files << endl;
-        cout << "Total Folders: " << folders << endl;
+        std::cout << "Saved " << index.size() << " file(s).\n";
+        return 0;
     }
-    catch (const fs::filesystem_error& e)
+
+    if (command == "--load-index" && argc == 3)
     {
-        cerr << "Scanning error: " << e.what() << endl;
-        return 1;
-    }
+        if (!index.loadFromFile(fs::u8path(argv[2])))
+        {
+            std::cerr << "Could not load the index.\n";
+            return 1;
+        }
 
-    return 0;
+        std::cout << "Loaded " << index.size() << " file(s).\n";
+        for (const auto& entry : index.allFiles())
+            std::cout << entry.relativePath.generic_u8string() << '\n';
+
+        return 0;
+    }
+    if (command == "--check-index" && argc == 4)
+    {
+        if (!index.loadFromFile(fs::u8path(argv[3])))
+        {
+            std::cerr << "Could not load the index.\n";
+            return 1;
+        }
+
+        const auto scan = FileScanner{}.scan(fs::u8path(argv[2]));
+        if (!scan.rootValid)
+        {
+            std::cerr << "Invalid folder path.\n";
+            return 1;
+        }
+        if (!scan.complete())
+        {
+            std::cerr << "Scan incomplete. Cannot compare the index reliably.\n";
+            return 2;
+        }
+
+        FileIndex current;
+        for (const auto& entry : scan.entries)
+            current.add(entry);
+
+        std::size_t changed = 0;
+        std::size_t missing = 0;
+        for (const auto& saved : index.allFiles())
+        {
+            const auto* now = current.findByPath(saved.relativePath);
+            if (!now)
+            {
+                std::cout << "[MISSING] " << saved.relativePath.generic_u8string() << '\n';
+                ++missing;
+            }
+            else if (saved.sizeBytes != now->sizeBytes ||
+                     saved.modifiedTime != now->modifiedTime)
+            {
+                std::cout << "[CHANGED] " << saved.relativePath.generic_u8string() << '\n';
+                ++changed;
+            }
+        }
+
+        std::cout << "Changed: " << changed << ", Missing: " << missing << '\n';
+        return 0;
+    }
+        if (command == "--find-name" && argc == 4)
+    {
+        folderflow::FileIndex searchIndex;
+        if (!searchIndex.loadFromFile(fs::u8path(argv[2])))
+        {
+            std::cerr << "Could not load the index.\n";
+            return 1;
+        }
+
+        const auto matches = searchIndex.findByName(argv[3]);
+        for (const auto* file : matches)
+        {
+            std::cout << file->relativePath.generic_u8string() << '\n';
+        }
+
+        std::cout << "Matches: " << matches.size() << '\n';
+        return 0;
+    }
+        if (command == "--index-summary" && argc == 3)
+    {
+        folderflow::FileIndex summaryIndex;
+        if (!summaryIndex.loadFromFile(fs::u8path(argv[2])))
+        {
+            std::cerr << "Could not load the index.\n";
+            return 1;
+        }
+
+        std::cout << "Total files: " << summaryIndex.size() << '\n';
+        return 0;
+    }
+    std::cerr << "Usage:\n"
+              << "  folderflow --save-index <folder> <index-file>\n"
+              << "  folderflow --load-index <index-file>\n"
+              << "  folderflow --check-index <folder> <index-file>\n"
+              << "  folderflow --find-name <index-file> <name-part>\n";
+    return 1;
 }
