@@ -1,3 +1,6 @@
+
+#include "file_index.hpp"
+#include "rule_config.hpp"
 #include "application.hpp"
 #include "file_index.hpp"
 #include "scanner.hpp"
@@ -14,7 +17,24 @@ int main(int argc, char* argv[])
 
     const std::string command = argv[1];
     FileIndex index;
+    if (command == "--check-rules" && argc == 3)
+    {
+         const auto result =
+            folderflow::loadExtensionRules(std::filesystem::u8path(argv[2]));
 
+        if (!result.error.empty())
+         {
+              std::cerr << result.error << '\n';
+              return 1;
+         }
+
+        for (const auto& rule : result.rules)
+            std::cout << rule.extension << " -> "
+                      << rule.destination.generic_u8string() << '\n';
+
+        std::cout << "Loaded rules: " << result.rules.size() << '\n';
+        return 0;
+        }
     if (command == "--save-index" && argc == 4)
     {
         const auto scan = FileScanner{}.scan(fs::u8path(argv[2]));
@@ -136,6 +156,8 @@ int main(int argc, char* argv[])
               << "  folderflow --save-index <folder> <index-file>\n"
               << "  folderflow --load-index <index-file>\n"
               << "  folderflow --check-index <folder> <index-file>\n"
-              << "  folderflow --find-name <index-file> <name-part>\n";
+              << "  folderflow --find-name <index-file> <name-part>\n"
+              << "  folderflow --index-summary <index-file>\n"
+              << "  folderflow --check-rules <config-file>\n";
     return 1;
 }

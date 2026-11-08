@@ -3,8 +3,8 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $buildDirectory = Join-Path $projectRoot "build"
 New-Item -ItemType Directory -Path $buildDirectory -Force | Out-Null
-$sources = @("main.cpp", "application.cpp", "scanner.cpp", "file_index.cpp") | ForEach-Object {
-    Join-Path (Join-Path $projectRoot "src") $_
+$sources = @("main.cpp", "application.cpp", "scanner.cpp", "file_index.cpp", "rule_config.cpp") | ForEach-Object {
+Join-Path (Join-Path $projectRoot "src") $_
 }
 $executable = Join-Path $buildDirectory "folderflow.exe"
 & $Compiler -std=c++17 -Wall -Wextra -Wpedantic @sources -o $executable

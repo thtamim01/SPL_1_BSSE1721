@@ -1,0 +1,5 @@
+.pdf=Documents
+.docx=Documents
+.jpg=Images
+.png=Images
+.zip=Archives
