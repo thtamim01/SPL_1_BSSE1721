@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 
     const std::string command = argv[1];
     FileIndex index;
-    if ((command == "--evaluate-rules" || command == "--dry-run") &&
+    if ((command == "--evaluate-rules" || command == "--dry-run" || command == "--organize") &&
     argc == 4)
     {
         const auto config = loadExtensionRules(fs::u8path(argv[3]));
@@ -147,6 +147,126 @@ int main(int argc, char* argv[])
             for (const auto& source : group.sources)
                 std::cout << "  - " << source << '\n';
         }
+
+        if (command == "--organize")
+        {
+#ifdef _WIN32
+            std::error_code ec;
+            const auto root = fs::absolute(scan.root, ec).lexically_normal();
+            if (ec)
+            {
+                std::cerr << "Cannot resolve the selected folder.\n";
+                return 1;
+            }
+
+            const auto plainDirectoryChain = [](fs::path directory)
+            {
+                while (!directory.empty())
+                {
+                    const DWORD attributes = GetFileAttributesW(directory.c_str());
+                    if (attributes == INVALID_FILE_ATTRIBUTES ||
+                        !(attributes & FILE_ATTRIBUTE_DIRECTORY) ||
+                        (attributes & FILE_ATTRIBUTE_REPARSE_POINT))
+                        return false;
+
+                    const auto parent = directory.parent_path();
+                    if (parent == directory)
+                        break;
+                    directory = parent;
+                }
+                return true;
+            };
+
+            if (!plainDirectoryChain(root))
+            {
+                std::cerr << "Selected folder has an inaccessible or linked parent.\n";
+                return 1;
+            }
+
+            bool failed = false;
+            for (const auto& item : destinations)
+            {
+                const auto& group = item.second;
+                if (group.sources.size() != 1)
+                    continue; // The existing conflict report already lists these files.
+
+                const auto relativeSource = fs::u8path(group.sources.front());
+                const auto relativeTarget = fs::u8path(group.displayPath);
+                const auto folder = relativeTarget.parent_path();
+                const auto folderName = folder.native();
+
+                if (folder.empty() || folder != folder.filename() ||
+                    folder == "." || folder == ".." ||
+                    folderName.find_first_of(L"<>:\"/\\|?*") != std::wstring::npos ||
+                    folderName.back() == L'.' || folderName.back() == L' ')
+                {
+                    std::cout << "SKIP: invalid destination folder for "
+                              << group.displayPath << '\n';
+                    continue;
+                }
+
+                const auto source = root / relativeSource;
+                const auto target = root / relativeTarget;
+                const auto targetFolder = target.parent_path();
+                const DWORD sourceAttributes = GetFileAttributesW(source.c_str());
+
+                if (!plainDirectoryChain(source.parent_path()) ||
+                    sourceAttributes == INVALID_FILE_ATTRIBUTES ||
+                    (sourceAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)))
+                {
+                    std::cout << "SKIP: unsafe source " << group.sources.front() << '\n';
+                    continue;
+                }
+
+                DWORD folderAttributes = GetFileAttributesW(targetFolder.c_str());
+                if (folderAttributes == INVALID_FILE_ATTRIBUTES)
+                {
+                    const DWORD error = GetLastError();
+                    if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND)
+                    {
+                        fs::create_directory(targetFolder, ec);
+                        if (ec)
+                        {
+                            std::cerr << "FAILED: cannot create " << folder.generic_u8string()
+                                      << ": " << ec.message() << '\n';
+                            failed = true;
+                            continue;
+                        }
+                    }
+                }
+
+                if (!plainDirectoryChain(targetFolder))
+                {
+                    std::cout << "SKIP: unsafe destination folder for " << group.displayPath << '\n';
+                    continue;
+                }
+
+                if (GetFileAttributesW(target.c_str()) != INVALID_FILE_ATTRIBUTES)
+                {
+                    std::cout << "SKIP: destination already exists " << group.displayPath << '\n';
+                    continue;
+                }
+
+                if (!MoveFileExW(source.c_str(), target.c_str(), 0))
+                {
+                    const DWORD error = GetLastError();
+                    std::cerr << "FAILED: " << group.sources.front()
+                              << " (Windows error " << error << ")\n";
+                    failed = true;
+                    continue;
+                }
+
+                std::cout << "MOVED: " << group.sources.front()
+                          << " -> " << group.displayPath << '\n';
+            }
+
+            return failed ? 2 : 0;
+#else
+            std::cerr << "--organize is currently supported on Windows only.\n";
+            return 1;
+#endif
+        }
+
 
         return 0;
     }
