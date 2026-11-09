@@ -12,7 +12,8 @@ code; they do not invent personal learning experiences.
 | 1.4 | [Metadata/storage](phase1-scanning.md#14-file-metadata-and-storage) |
 | 1.5 | [Modularity/tests](phase1-scanning.md#15-modular-scanner-and-automated-tests) |
 
-Phase 2-7 manuals will be added alongside implemented code, not in advance.
+Manuals are added alongside implemented code.
 Recorded Linux results and new Windows execution must be identified separately.
 
 - [Phase 2.1 — File index](phase2-2.1-file-index.md)
+- [Phase 4.1 — Storage analysis and Phase 3 Windows references](phase4-4.1-storage-analysis.md)

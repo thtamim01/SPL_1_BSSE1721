@@ -15,6 +15,7 @@
 #include "file_index.hpp"
 #include "scanner.hpp"
 #include <cctype>
+#include <charconv>
 #include <iostream>
 #include <string>
 #include <map>
@@ -28,6 +29,28 @@ int main(int argc, char* argv[])
         return runApplication(std::cin, std::cout);
 
     const std::string command = argv[1];
+
+    if (command == "--analyze-storage")
+    {
+        if (argc != 3 && argc != 4)
+        {
+            std::cerr << "Usage: folderflow --analyze-storage <folder> [top-count]\n";
+            return 1;
+        }
+        std::size_t limit = 5;
+        if (argc == 4)
+        {
+            const std::string count = argv[3];
+            const auto end = count.data() + count.size();
+            const auto parsed = std::from_chars(count.data(), end, limit);
+            if (parsed.ec != std::errc{} || parsed.ptr != end || limit < 1 || limit > 100)
+            {
+                std::cerr << "Top count must be an integer from 1 to 100.\n";
+                return 1;
+            }
+        }
+        return runStorageAnalysis(fs::u8path(argv[2]), limit, std::cout, std::cerr);
+    }
     #ifdef _WIN32
     const auto plainDirectoryChain = [](fs::path directory)
     {
@@ -698,6 +721,7 @@ int main(int argc, char* argv[])
         return 0;
     }
     std::cerr << "Usage:\n"
+              << "  folderflow --analyze-storage <folder> [top-count]\n"
               << "  folderflow --save-index <folder> <index-file>\n"
               << "  folderflow --load-index <index-file>\n"
               << "  folderflow --check-index <folder> <index-file>\n"

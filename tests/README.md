@@ -24,7 +24,7 @@ Recorded Linux result: 25 passed, 0 failed, 0 skipped. See
 
 Direct Linux reproduction:
 
-    g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror tests/scanner_tests.cpp src/scanner.cpp src/application.cpp -o build/scanner_tests
+    g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror tests/scanner_tests.cpp src/scanner.cpp src/application.cpp src/file_index.cpp src/storage_analyzer.cpp -o build/scanner_tests
     ./build/scanner_tests
 
 Tests use explicit checks, not assertions disabled by NDEBUG.
@@ -32,3 +32,17 @@ Tests use explicit checks, not assertions disabled by NDEBUG.
 Phase 2.1 adds `file_index_tests.cpp`: 11 named checks for lookup, replacement,
 extension grouping, invalid keys and pointer stability. `scripts/test.ps1` runs
 both suites and stops on build failures or failed tests. Windows results are pending.
+
+## Phase 4.1 storage analysis tests
+
+`scripts/test.ps1` also runs `storage_analyzer_tests.cpp`. The suite covers
+empty scans, extension grouping, counts and percentages, unknown sizes,
+folder totals, bounded rankings and ties, decimal formatting and overflow.
+See the [Windows demo](../learnings/phase4-4.1-storage-analysis.md#try-it-on-windows)
+for a disposable end-to-end check.
+
+Phase 4.1 Linux verification with GCC 14.2.0 and `-Werror`: scanner 25
+passed, index 14 passed and storage analyzer 10 passed, with zero failures
+or skips. CLI checks also covered the disposable demo, invalid arguments,
+a partially readable folder, and output parity for eight existing index
+and rule commands. Phase 4.1 Windows execution is pending.

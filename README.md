@@ -7,17 +7,22 @@ C++17; primary platform: Windows, VS Code, MSYS2 GCC/G++.
 
 ## Current checkpoint
 
-DEVELOPMENT PHASE 1, subphases 1.3/1.4/1.5: modular scanner, structured metadata,
-explicit exclusions/errors and repeatable tests. Existing history is preserved.
-
 The scanner accepts a root, traverses ordinary child folders, returns relative
 paths/type/extension/size/modification metadata, and prints file/folder counts
 and logical byte/decimal KB/MB totals. .git is excluded. Links and non-regular
 entries are skipped. Inaccessible content or measurement failures produce
 issues and partial results instead of silently complete totals.
 
-Indexing/search, rules/moves/undo, duplicates/recovery, versions/chunks and
-snapshots are not implemented.
+Saved indexing, filename search and index comparison are implemented. Phase 3
+adds extension rules, evaluation, dry-run preview, and Windows organization
+and undo. Phase 4.1 adds a read-only storage report with counts and bytes by
+extension and rankings for files and folders.
+
+    .\build\folderflow.exe --analyze-storage "C:\Path\To\Folder" 5
+
+See [Storage analysis](learnings/phase4-4.1-storage-analysis.md) for the demo,
+algorithm and references. Duplicate detection, versioning and snapshots are
+future work.
 
 ## Build and test on Windows
 

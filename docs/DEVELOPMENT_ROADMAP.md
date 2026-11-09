@@ -4,11 +4,22 @@ Authoritative hierarchy: FULL PROJECT -> DEVELOPMENT PHASE -> NUMBERED SUBPHASE 
 
 Audit: 3 November 2026 (Asia/Dhaka). Baseline: `32bd6a5ab11f9216023e91e3cd47cad77415487f` on `feature/storage-analysis`; `main` is `b9b9b7f`. This replaces the earlier 14-phase planning scheme; existing commits and historical notes retain their original names.
 
+## Current development sequence
+
+Phase 2 (persistent index and search) and Phase 3 (rule-based organization
+and undo) reached `main` through pull requests #1 and #2. The Phase 4.1
+storage analysis work starts at merge commit `9451701`.
+
+The current Phase 4 sequence is 4.1 storage analysis, 4.2 interactive menu,
+4.3 architecture refactoring, 4.4 duplicate detection and 4.5 safe cleanup
+and recovery. The numbered table below is the earlier plan. In particular,
+its storage analytics entry under 2.4 now belongs to Phase 4.1.
+
 ## Status rules
 
 Only these states are used: NOT STARTED; IN PROGRESS; IMPLEMENTED — UNVERIFIED; TESTED; INTEGRATED; PUBLISHED; BLOCKED. A higher state applies only to the acceptance scope supported by evidence. PUBLISHED identifies the exact verified remote branch/commit, not completion of every platform test. INTEGRATED names the target integration; main integration is recorded separately. Old manual evidence is identified as historical, not a fresh execution.
 
-A Develop -> B Verify -> C Integrate -> D Smoke Check -> E Document. Commits follow meaningful changes, not a fixed quota. New branch convention: `phaseN/N.M-short-description`. The current checkpoint branch is `phase1/1.5-modular-scanner`, covering the dependent 1.3/1.4 corrections and 1.5 extraction.
+A Develop -> B Verify -> C Integrate -> D Smoke Check -> E Document. Commits follow meaningful changes, not a fixed quota. New branch convention: `phaseN/N.M-short-description`. The Phase 1 checkpoint branch was `phase1/1.5-modular-scanner`, covering the dependent 1.3/1.4 corrections and 1.5 extraction.
 
 ## Historical evidence
 
@@ -18,7 +29,7 @@ A Develop -> B Verify -> C Integrate -> D Smoke Check -> E Document. Commits fol
 - Historical Windows normal fixture: two files, two directories, 1500000 bytes; temporary-copy size fault: one measurement fails and measured total becomes 1000000 bytes.
 - Windows symbolic-link creation was blocked by privilege requirements. No Windows link-runtime pass is claimed.
 
-## Current local checkpoint
+## Historical Phase 1 local checkpoint
 
 Implementation 21c4bf9; tests 69bb869. Native suite: 25 passed, 0 failed,
 0 skipped; real executable smoke passed. These remain local commits until

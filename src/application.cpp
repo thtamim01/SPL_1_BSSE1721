@@ -1,6 +1,7 @@
 #include "application.hpp"
 #include "scanner.hpp"
 #include "file_index.hpp"
+#include "storage_analyzer.hpp"
 
 #include <iomanip>
 #include <istream>
@@ -9,6 +10,75 @@
 
 namespace folderflow
 {
+int runStorageAnalysis(const fs::path& root, std::size_t limit,
+                       std::ostream& output, std::ostream& errors)
+{
+    const auto scan = FileScanner{}.scan(root);
+    for (const auto& issue : scan.issues)
+    {
+        errors << "[ERROR] " << issue.relativePath.generic_u8string()
+               << " - " << issue.operation << ": " << issue.message << '\n';
+    }
+    if (!scan.rootValid)
+        return 1;
+
+    const auto report = analyzeStorage(scan, limit);
+    if (!report)
+    {
+        errors << "Storage analysis stopped: byte total exceeds the supported range.\n";
+        return 2;
+    }
+
+    const auto printSize = [&](std::uintmax_t bytes)
+    {
+        output << bytes << " bytes (" << formatStorageSize(bytes) << ')';
+    };
+    output << "Files: " << report->files << "\nMeasured storage: ";
+    printSize(report->bytes);
+    output << "\nFiles with unknown size: " << report->unknownSizes << '\n';
+
+    const auto previousFlags = output.flags();
+    const auto previousPrecision = output.precision();
+    output << "\nBy extension (share of measured storage):\n"
+           << std::fixed << std::setprecision(2);
+    if (report->byExtension.empty())
+        output << "  (none)\n";
+    for (const auto& [extension, group] : report->byExtension)
+    {
+        output << "  " << (extension.empty() ? "(no extension)" : extension)
+               << " | " << group.files << " file(s) | ";
+        printSize(group.bytes);
+        output << " | " << storagePercent(group.bytes, report->bytes) << '%';
+        if (group.unknownSizes != 0)
+            output << " | " << group.unknownSizes << " unknown size(s)";
+        output << '\n';
+    }
+    output.flags(previousFlags);
+    output.precision(previousPrecision);
+
+    const auto printRanking = [&](const char* heading, const std::vector<StorageItem>& items)
+    {
+        output << '\n' << heading << " (up to " << limit << "):\n";
+        if (items.empty())
+            output << "  (none)\n";
+        for (const auto& item : items)
+        {
+            output << "  " << item.relativePath << " | ";
+            printSize(item.bytes);
+            output << '\n';
+        }
+    };
+    printRanking("Largest files", report->largestFiles);
+    printRanking("Largest folders by measured subtree size", report->largestFolders);
+
+    if (!scan.complete())
+    {
+        errors << "Warning: scan incomplete. Rankings and percentages cover measured data only.\n";
+        return 2;
+    }
+    return 0;
+}
+
 int runApplication(std::istream& input, std::ostream& output)
 {
     return runApplication(input, output, FileScanner{});
