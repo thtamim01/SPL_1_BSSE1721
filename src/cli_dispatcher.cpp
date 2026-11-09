@@ -16,6 +16,7 @@
 #include "menu.hpp"
 #include "scanner.hpp"
 #include "duplicate_detector.hpp"
+#include "quarantine.hpp"
 #include <cctype>
 #include <charconv>
 #include <istream>
@@ -32,6 +33,38 @@ int runCommand(int argc, const char* const argv[], std::istream& consoleInput,
                std::ostream& consoleOutput, std::ostream& consoleErrors)
 {
     const std::string command = argv[1];
+
+    if (command == "--quarantine" || command == "--restore-quarantine")
+    {
+        if (argc != 4 || *argv[2] == '\0' || *argv[3] == '\0')
+        {
+            consoleErrors << "Usage: folderflow " << command << " <folder> <file-or-id>\n";
+            return 1;
+        }
+        consoleOutput << "Selected " << (command == "--quarantine" ? "file: " : "recovery ID: ")
+                      << argv[3] << " in " << argv[2] << '\n'
+                      << "Type YES to confirm " << command << ": " << std::flush;
+        std::string answer;
+        if (!std::getline(consoleInput, answer) || answer != "YES")
+        {
+            consoleOutput << "Cancelled.\n";
+            return 0;
+        }
+        if (command == "--quarantine")
+            return quarantineFile(fs::u8path(argv[2]), fs::u8path(argv[3]),
+                                  consoleOutput, consoleErrors);
+        return restoreQuarantine(fs::u8path(argv[2]), argv[3],
+                                 consoleOutput, consoleErrors);
+    }
+    if (command == "--list-quarantine")
+    {
+        if (argc != 3 || *argv[2] == '\0')
+        {
+            consoleErrors << "Usage: folderflow --list-quarantine <folder>\n";
+            return 1;
+        }
+        return listQuarantine(fs::u8path(argv[2]), consoleOutput, consoleErrors);
+    }
 
     if (command == "--find-duplicates")
     {
@@ -748,6 +781,9 @@ int runCommand(int argc, const char* const argv[], std::istream& consoleInput,
               << "  folderflow --scan [folder]\n"
               << "  folderflow --analyze-storage <folder> [top-count]\n"
               << "  folderflow --find-duplicates <folder>\n"
+              << "  folderflow --quarantine <folder> <relative-file>   (asks for YES)\n"
+              << "  folderflow --list-quarantine <folder>\n"
+              << "  folderflow --restore-quarantine <folder> <id>    (asks for YES)\n"
               << "  folderflow --save-index <folder> <index-file>\n"
               << "  folderflow --load-index <index-file>\n"
               << "  folderflow --check-index <folder> <index-file>\n"

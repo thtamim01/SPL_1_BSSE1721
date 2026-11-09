@@ -76,9 +76,9 @@ ScanResult FileScanner::scan(const fs::path& selectedRoot) const
     }
     for (const auto& component : result.root)
     {
-        if (component == ".git")
+        if (component == ".git" || component == ".folderflow-quarantine")
         {
-            report(".", "root", "Directories inside .git are excluded.");
+            report(".", "root", "Internal .git and quarantine directories are excluded.");
             return result;
         }
     }
@@ -116,7 +116,7 @@ ScanResult FileScanner::scan(const fs::path& selectedRoot) const
         auto visit = [&](const fs::path& path)
         {
             const auto relative = path.lexically_relative(result.root);
-            if (path.filename() == ".git")
+            if (path.filename() == ".git" || path.filename() == ".folderflow-quarantine")
             {
                 ++result.excludedEntries;
                 return;

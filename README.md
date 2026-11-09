@@ -9,7 +9,7 @@ C++17; primary platform: Windows, VS Code, MSYS2 GCC/G++.
 
 The scanner accepts a root, traverses ordinary child folders, returns relative
 paths/type/extension/size/modification metadata, and prints file/folder counts
-and logical byte/decimal KB/MB totals. .git is excluded. Links and non-regular
+and logical byte/decimal KB/MB totals. .git and quarantine data are excluded. Links and non-regular
 entries are skipped. Inaccessible content or measurement failures produce
 issues and partial results instead of silently complete totals.
 
@@ -21,8 +21,7 @@ extension and rankings for files and folders.
     .\build\folderflow.exe --analyze-storage "C:\Path\To\Folder" 5
 
 See [Storage analysis](learnings/phase4-4.1-storage-analysis.md) for the demo,
-algorithm and references. Duplicate detection, versioning and snapshots are
-future work.
+algorithm and references. Versioning and snapshots are future work.
 
 ## Build and test on Windows
 
@@ -46,6 +45,17 @@ Find verified, content-identical files without changing them:
 The interactive menu also offers option 7. See the
 [duplicate detection guide](learnings/phase4-4.4-duplicate-detection.md)
 for the algorithm, limitations, and a disposable Windows demonstration.
+
+Quarantine one specifically chosen file, list its recovery ID, or restore it
+without overwriting a newly occupied original path:
+
+    .\build\folderflow.exe --quarantine "C:\path\to\folder" "relative\file.txt"
+    .\build\folderflow.exe --list-quarantine "C:\path\to\folder"
+    .\build\folderflow.exe --restore-quarantine "C:\path\to\folder" RECOVERY_ID
+
+The two moves ask for `YES`; menu options 8–10 expose the same operations.
+See the [quarantine and recovery guide](learnings/phase4-4.5a-safe-quarantine.md)
+for the disposable PowerShell demonstration and interruption limitations.
 
 Run the interactive menu from the repository root:
 

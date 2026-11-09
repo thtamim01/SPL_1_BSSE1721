@@ -20,3 +20,4 @@ Recorded Linux results and new Windows execution must be identified separately.
 - [Phase 4.2 — Interactive console menu](phase4-4.2-interactive-menu.md)
 - [Phase 4.3A — Modular CLI architecture](phase4-4.3a-cli-refactoring.md)
 - [Phase 4.4 — Content-based duplicate detection](phase4-4.4-duplicate-detection.md)
+- [Phase 4.5A — Safe quarantine and recovery](phase4-4.5a-safe-quarantine.md)

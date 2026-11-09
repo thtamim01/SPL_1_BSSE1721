@@ -49,7 +49,8 @@ try {
 $cliExecutable = Join-Path (Join-Path $projectRoot "build") "cli_dispatcher_tests.exe"
 $cliSources = @("tests/cli_dispatcher_tests.cpp", "src/cli_dispatcher.cpp", "src/menu.cpp",
                 "src/application.cpp", "src/scanner.cpp", "src/file_index.cpp",
-                "src/rule_config.cpp", "src/storage_analyzer.cpp", "src/duplicate_detector.cpp") | ForEach-Object {
+                "src/rule_config.cpp", "src/storage_analyzer.cpp", "src/duplicate_detector.cpp",
+                "src/quarantine.cpp") | ForEach-Object {
     Join-Path $projectRoot $_
 }
 & $Compiler -std=c++17 -Wall -Wextra -Wpedantic @cliSources -o $cliExecutable
@@ -64,3 +65,11 @@ $duplicateSources = @("tests/duplicate_detector_tests.cpp", "src/duplicate_detec
 if ($LASTEXITCODE -ne 0) { throw "Duplicate detector test build failed." }
 & $duplicateExecutable
 if ($LASTEXITCODE -ne 0) { throw "Duplicate detector tests failed." }
+
+$quarantineExecutable = Join-Path (Join-Path $projectRoot "build") "quarantine_tests.exe"
+$quarantineSources = @("tests/quarantine_tests.cpp", "src/quarantine.cpp",
+                       "src/scanner.cpp") | ForEach-Object { Join-Path $projectRoot $_ }
+& $Compiler -std=c++17 -Wall -Wextra -Wpedantic @quarantineSources -o $quarantineExecutable
+if ($LASTEXITCODE -ne 0) { throw "Quarantine test build failed." }
+& $quarantineExecutable
+if ($LASTEXITCODE -ne 0) { throw "Quarantine tests failed." }

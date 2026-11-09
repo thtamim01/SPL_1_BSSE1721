@@ -203,6 +203,43 @@ int main()
               fs::directory_iterator(folder) != fs::directory_iterator{},
               "Duplicate report modified files");
     });
+    test("quarantine CLI requires YES and restores only by chosen ID", []
+    {
+        Fixture fixture;
+        const auto folder = fixture.root.u8string();
+        const auto source = fixture.root / "report.pdf";
+        writeFile(source, "original bytes");
+        expectOutput(run({"--quarantine", folder, "report.pdf"}, "no\n"), "Cancelled.");
+        check(fs::exists(source) && !fs::exists(fixture.root / ".folderflow-quarantine"),
+              "Cancellation moved a file");
+        const auto moved = run({"--quarantine", folder, "report.pdf"}, "YES\n");
+        expectOutput(moved, "QUARANTINED report.pdf ID: ");
+        const auto id = moved.output.substr(moved.output.find("ID: ") + 4, 32);
+        check(!fs::exists(source), "Confirmed quarantine did not move selected file");
+        expectOutput(run({"--list-quarantine", folder}), (id + " QUARANTINED").c_str());
+        expectOutput(run({"--restore-quarantine", folder, id}, "\n"), "Cancelled.");
+        check(!fs::exists(source), "Restore cancellation moved a file");
+        expectOutput(run({"--restore-quarantine", folder, id}, "YES\n"), "RESTORED report.pdf");
+        check(fs::exists(source) && !fs::exists(fixture.root / ".folderflow-quarantine" / id / "payload"),
+              "Recovery did not restore selected file");
+    });
+    test("menu quarantine, list and restore use the CLI confirmation", []
+    {
+        Fixture fixture;
+        const auto folder = fixture.root.u8string();
+        const auto source = fixture.root / "report.pdf";
+        writeFile(source, "original bytes");
+        const auto cancelled = run({}, "8\n" + folder + "\nreport.pdf\nno\n0\n");
+        expectOutput(cancelled, "Cancelled.");
+        check(fs::exists(source), "Menu bypassed confirmation");
+        const auto moved = run({}, "8\n" + folder + "\nreport.pdf\nYES\n9\n" + folder + "\n0\n");
+        expectOutput(moved, "QUARANTINED report.pdf ID: ");
+        expectOutput(moved, " QUARANTINED report.pdf ->");
+        const auto id = moved.output.substr(moved.output.find("ID: ") + 4, 32);
+        const auto restored = run({}, "10\n" + folder + "\n" + id + "\nYES\n0\n");
+        expectOutput(restored, "RESTORED report.pdf");
+        check(fs::exists(source), "Menu did not restore file");
+    });
     test("organize and undo honor platform support", []
     {
         Fixture fixture;

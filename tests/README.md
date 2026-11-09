@@ -78,3 +78,14 @@ nonduplicates, forced hash collisions, large buffered reads, changed files,
 incomplete scans, and skipped symlinks. The dispatcher and menu suites also
 check the new command route with disposable fixtures and unchanged files.
 See the [Windows demo](../learnings/phase4-4.4-duplicate-detection.md#windows-powershell-verification).
+
+## Phase 4.5A safe quarantine and recovery
+
+`scripts/test.ps1` compiles and runs `tests/quarantine_tests.cpp` using
+exclusively created disposable temporary folders. It checks exact content
+restoration, unique IDs, occupied destinations, missing payloads, damaged and
+pending records, unsafe paths, scanner exclusion, and links where the platform
+permits creating them. The real dispatcher tests also cover CLI and menu
+confirmation, cancellation, listing, restoration and command compatibility.
+No test uses personal files. Read reported PASS, FAIL and SKIP counts separately.
+See the [Windows verification guide](../learnings/phase4-4.5a-safe-quarantine.md#try-it-in-windows-powershell).

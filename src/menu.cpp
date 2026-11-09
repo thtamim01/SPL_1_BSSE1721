@@ -65,19 +65,22 @@ bool confirm(std::istream& input, std::ostream& output, const std::string& folde
 
 struct Option
 {
-    char number;
+    const char* number;
     const char* label;
     const char* command;
 };
 
 constexpr Option options[] = {
-    {'1', "Scan a folder", "--scan"},
-    {'2', "Analyze storage", "--analyze-storage"},
-    {'3', "Search a saved index", "--find-name"},
-    {'4', "Preview organization", "--dry-run"},
-    {'5', "Organize files", "--organize"},
-    {'6', "Undo organization", "--undo"},
-    {'7', "Find duplicate files", "--find-duplicates"},
+    {"1", "Scan a folder", "--scan"},
+    {"2", "Analyze storage", "--analyze-storage"},
+    {"3", "Search a saved index", "--find-name"},
+    {"4", "Preview organization", "--dry-run"},
+    {"5", "Organize files", "--organize"},
+    {"6", "Undo organization", "--undo"},
+    {"7", "Find duplicate files", "--find-duplicates"},
+    {"8", "Quarantine a file", "--quarantine"},
+    {"9", "List quarantined files", "--list-quarantine"},
+    {"10", "Restore a quarantined file", "--restore-quarantine"},
 };
 }
 
@@ -90,7 +93,8 @@ int runMenu(std::istream& input, std::ostream& output, const MenuCommand& execut
         output << '\n';
         const auto available = [fileMovesAvailable](const Option& option)
         {
-            return fileMovesAvailable || (option.number != '5' && option.number != '6');
+            return fileMovesAvailable || (std::string(option.number) != "5" &&
+                std::string(option.number) != "6");
         };
         for (const auto& option : options)
             if (available(option))
@@ -109,7 +113,7 @@ int runMenu(std::istream& input, std::ostream& output, const MenuCommand& execut
 
         const Option* selected = nullptr;
         for (const auto& option : options)
-            if (choice.size() == 1 && choice.front() == option.number && available(option))
+            if (choice == option.number && available(option))
                 selected = &option;
         if (!selected)
         {
@@ -117,10 +121,10 @@ int runMenu(std::istream& input, std::ostream& output, const MenuCommand& execut
             continue;
         }
 
-        const char number = selected->number;
+        const std::string number = selected->number;
         std::string path;
         std::string extra;
-        if (number == '3')
+        if (number == "3")
         {
             if (!readPath(input, output, "Saved index file: ", false, path))
                 continue;
@@ -138,12 +142,24 @@ int runMenu(std::istream& input, std::ostream& output, const MenuCommand& execut
         {
             if (!readPath(input, output, "Folder path: ", true, path))
                 continue;
-            if ((number == '4' || number == '5') &&
+            if ((number == "4" || number == "5") &&
                 !readPath(input, output,
                           "Rules file [Enter for config/extension-rules.txt]: ",
                           false, extra, "config/extension-rules.txt"))
                 continue;
-            if ((number == '5' || number == '6') && !confirm(input, output, path))
+            if (number == "8")
+            {
+                output << "Relative file path: " << std::flush;
+                if (!std::getline(input, extra) || (extra = trim(extra)).empty())
+                    continue;
+            }
+            if (number == "10")
+            {
+                output << "Recovery ID: " << std::flush;
+                if (!std::getline(input, extra) || (extra = trim(extra)).empty())
+                    continue;
+            }
+            if ((number == "5" || number == "6") && !confirm(input, output, path))
                 continue;
         }
 
