@@ -81,6 +81,13 @@ int main()
         check(session.run("junk\n10\n\n0\n") == 0 && session.calls.empty() &&
               session.says("Invalid choice") && session.says("Goodbye"), "Invalid choice dispatched");
     });
+    test("duplicate choice accepts a folder and works without move support", [&]
+    {
+        Session session;
+        check(session.run("7\n" + folder + "\n0\n", false) == 0 &&
+              session.calls == std::vector<Arguments>{{"--find-duplicates", folder}} &&
+              session.says("Find duplicate files"), "Duplicate menu route missing");
+    });
     test("blank and wrong-kind paths are rejected", [&]
     {
         Session session;

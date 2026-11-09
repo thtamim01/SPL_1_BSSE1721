@@ -69,3 +69,12 @@ behavior. The Windows case moves and restores a file in a disposable fixture.
 On other systems the same case checks the existing Windows-only errors.
 
 See the [Windows verification commands](../learnings/phase4-4.3a-cli-refactoring.md#windows-verification).
+
+## Phase 4.4 duplicate detection
+
+`scripts/test.ps1` builds and runs `tests/duplicate_detector_tests.cpp`.
+It checks content equality across names and folders, empty files, same-sized
+nonduplicates, forced hash collisions, large buffered reads, changed files,
+incomplete scans, and skipped symlinks. The dispatcher and menu suites also
+check the new command route with disposable fixtures and unchanged files.
+See the [Windows demo](../learnings/phase4-4.4-duplicate-detection.md#windows-powershell-verification).

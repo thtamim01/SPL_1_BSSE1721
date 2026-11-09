@@ -39,6 +39,14 @@ No global policy change is required. The test script builds the application,
 then the tests, and stops after compilation/test failures. Read PASS/FAIL/SKIP
 separately; unavailable privileges can make link tests SKIP.
 
+Find verified, content-identical files without changing them:
+
+    .\build\folderflow.exe --find-duplicates "C:\path\to\folder"
+
+The interactive menu also offers option 7. See the
+[duplicate detection guide](learnings/phase4-4.4-duplicate-detection.md)
+for the algorithm, limitations, and a disposable Windows demonstration.
+
 Run the interactive menu from the repository root:
 
     .\build\folderflow.exe

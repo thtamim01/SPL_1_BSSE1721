@@ -185,6 +185,24 @@ int main()
         check(fs::is_regular_file(report) && !fs::exists(folder / "Documents") &&
               !fs::exists(folder / ".folderflow-undo"), "Preview modified the fixture");
     });
+    test("duplicate CLI and menu agree without changing files", []
+    {
+        Fixture fixture;
+        const auto folder = fixture.root / "files";
+        fs::create_directory(folder);
+        writeFile(folder / "first.bin", "same");
+        writeFile(folder / "second.bin", "same");
+        const auto root = folder.u8string();
+        const auto direct = run({"--find-duplicates", root});
+        const auto menu = run({}, "7\n" + root + "\n0\n");
+        expectOutput(direct, "Confirmed groups: 1");
+        expectOutput(menu, "Confirmed groups: 1");
+        check(menu.output.find("Potential reclaimable logical bytes: 4") != std::string::npos &&
+              fs::is_regular_file(folder / "first.bin") &&
+              fs::is_regular_file(folder / "second.bin") &&
+              fs::directory_iterator(folder) != fs::directory_iterator{},
+              "Duplicate report modified files");
+    });
     test("organize and undo honor platform support", []
     {
         Fixture fixture;

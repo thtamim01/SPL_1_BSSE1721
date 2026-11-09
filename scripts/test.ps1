@@ -49,10 +49,18 @@ try {
 $cliExecutable = Join-Path (Join-Path $projectRoot "build") "cli_dispatcher_tests.exe"
 $cliSources = @("tests/cli_dispatcher_tests.cpp", "src/cli_dispatcher.cpp", "src/menu.cpp",
                 "src/application.cpp", "src/scanner.cpp", "src/file_index.cpp",
-                "src/rule_config.cpp", "src/storage_analyzer.cpp") | ForEach-Object {
+                "src/rule_config.cpp", "src/storage_analyzer.cpp", "src/duplicate_detector.cpp") | ForEach-Object {
     Join-Path $projectRoot $_
 }
 & $Compiler -std=c++17 -Wall -Wextra -Wpedantic @cliSources -o $cliExecutable
 if ($LASTEXITCODE -ne 0) { throw "CLI dispatcher test build failed." }
 & $cliExecutable
 if ($LASTEXITCODE -ne 0) { throw "CLI dispatcher tests failed." }
+
+$duplicateExecutable = Join-Path (Join-Path $projectRoot "build") "duplicate_detector_tests.exe"
+$duplicateSources = @("tests/duplicate_detector_tests.cpp", "src/duplicate_detector.cpp",
+                      "src/scanner.cpp") | ForEach-Object { Join-Path $projectRoot $_ }
+& $Compiler -std=c++17 -Wall -Wextra -Wpedantic @duplicateSources -o $duplicateExecutable
+if ($LASTEXITCODE -ne 0) { throw "Duplicate detector test build failed." }
+& $duplicateExecutable
+if ($LASTEXITCODE -ne 0) { throw "Duplicate detector tests failed." }

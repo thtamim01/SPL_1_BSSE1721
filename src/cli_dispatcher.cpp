@@ -15,6 +15,7 @@
 #include "application.hpp"
 #include "menu.hpp"
 #include "scanner.hpp"
+#include "duplicate_detector.hpp"
 #include <cctype>
 #include <charconv>
 #include <istream>
@@ -31,6 +32,16 @@ int runCommand(int argc, const char* const argv[], std::istream& consoleInput,
                std::ostream& consoleOutput, std::ostream& consoleErrors)
 {
     const std::string command = argv[1];
+
+    if (command == "--find-duplicates")
+    {
+        if (argc != 3 || *argv[2] == '\0')
+        {
+            consoleErrors << "Usage: folderflow --find-duplicates <folder>\n";
+            return 1;
+        }
+        return runDuplicateDetection(fs::u8path(argv[2]), consoleOutput, consoleErrors);
+    }
 
     if (command == "--scan")
     {
@@ -736,6 +747,7 @@ int runCommand(int argc, const char* const argv[], std::istream& consoleInput,
               << "  folderflow                  (interactive menu)\n"
               << "  folderflow --scan [folder]\n"
               << "  folderflow --analyze-storage <folder> [top-count]\n"
+              << "  folderflow --find-duplicates <folder>\n"
               << "  folderflow --save-index <folder> <index-file>\n"
               << "  folderflow --load-index <index-file>\n"
               << "  folderflow --check-index <folder> <index-file>\n"

@@ -77,6 +77,7 @@ constexpr Option options[] = {
     {'4', "Preview organization", "--dry-run"},
     {'5', "Organize files", "--organize"},
     {'6', "Undo organization", "--undo"},
+    {'7', "Find duplicate files", "--find-duplicates"},
 };
 }
 
@@ -89,7 +90,7 @@ int runMenu(std::istream& input, std::ostream& output, const MenuCommand& execut
         output << '\n';
         const auto available = [fileMovesAvailable](const Option& option)
         {
-            return fileMovesAvailable || option.number < '5';
+            return fileMovesAvailable || (option.number != '5' && option.number != '6');
         };
         for (const auto& option : options)
             if (available(option))
