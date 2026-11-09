@@ -45,3 +45,14 @@ try {
 } finally {
     Pop-Location
 }
+
+$cliExecutable = Join-Path (Join-Path $projectRoot "build") "cli_dispatcher_tests.exe"
+$cliSources = @("tests/cli_dispatcher_tests.cpp", "src/cli_dispatcher.cpp", "src/menu.cpp",
+                "src/application.cpp", "src/scanner.cpp", "src/file_index.cpp",
+                "src/rule_config.cpp", "src/storage_analyzer.cpp") | ForEach-Object {
+    Join-Path $projectRoot $_
+}
+& $Compiler -std=c++17 -Wall -Wextra -Wpedantic @cliSources -o $cliExecutable
+if ($LASTEXITCODE -ne 0) { throw "CLI dispatcher test build failed." }
+& $cliExecutable
+if ($LASTEXITCODE -ne 0) { throw "CLI dispatcher tests failed." }

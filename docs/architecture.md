@@ -1,4 +1,14 @@
-# Architecture - Phase 1 checkpoint
+# Architecture
+
+## Current CLI entry point (Phase 4.3A)
+
+`main.cpp` passes the command arguments and console streams to `runCli`.
+The dispatcher runs a direct command or starts the interactive menu. Menu
+selections call the same command handler through a callback. The Windows
+organization and undo handlers moved with the dispatcher. See the
+[Phase 4.3A manual](../learnings/phase4-4.3a-cli-refactoring.md).
+
+## Phase 1 checkpoint
 
 Subphases: 1.3, 1.4 and 1.5. Implementation: 21c4bf9; tests: 69bb869.
 

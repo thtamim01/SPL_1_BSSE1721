@@ -58,3 +58,14 @@ From the repository root on Linux:
 
     g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror tests/menu_tests.cpp src/menu.cpp -o build/menu_tests
     ./build/menu_tests
+
+## Phase 4.3A CLI dispatcher tests
+
+`scripts/test.ps1` runs eight additional checks in `tests/cli_dispatcher_tests.cpp`.
+They exercise the real dispatcher through direct arguments and scripted menu
+input. The suite checks usage errors, both scan modes, storage limits, index
+commands, rule evaluation and preview, and platform-specific organize/undo
+behavior. The Windows case moves and restores a file in a disposable fixture.
+On other systems the same case checks the existing Windows-only errors.
+
+See the [Windows verification commands](../learnings/phase4-4.3a-cli-refactoring.md#windows-verification).

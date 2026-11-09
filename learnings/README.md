@@ -18,3 +18,4 @@ Recorded Linux results and new Windows execution must be identified separately.
 - [Phase 2.1 — File index](phase2-2.1-file-index.md)
 - [Phase 4.1 — Storage analysis and Phase 3 Windows references](phase4-4.1-storage-analysis.md)
 - [Phase 4.2 — Interactive console menu](phase4-4.2-interactive-menu.md)
+- [Phase 4.3A — Modular CLI architecture](phase4-4.3a-cli-refactoring.md)
