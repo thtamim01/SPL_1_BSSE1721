@@ -30,3 +30,18 @@ $storageSources = @(
 if ($LASTEXITCODE -ne 0) { throw "Storage analyzer test build failed." }
 & $storageExecutable
 if ($LASTEXITCODE -ne 0) { throw "Storage analyzer tests failed." }
+
+$menuExecutable = Join-Path (Join-Path $projectRoot "build") "menu_tests.exe"
+$menuSources = @(
+    (Join-Path $projectRoot "tests/menu_tests.cpp"),
+    (Join-Path $projectRoot "src/menu.cpp")
+)
+& $Compiler -std=c++17 -Wall -Wextra -Wpedantic @menuSources -o $menuExecutable
+if ($LASTEXITCODE -ne 0) { throw "Menu test build failed." }
+Push-Location $projectRoot
+try {
+    & $menuExecutable
+    if ($LASTEXITCODE -ne 0) { throw "Menu tests failed." }
+} finally {
+    Pop-Location
+}

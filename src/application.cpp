@@ -95,7 +95,12 @@ int runApplication(std::istream& input, std::ostream& output, const FileScanner&
     }
     if (folderPath.empty()) { folderPath = "."; }
 
-    const auto result = scanner.scan(fs::u8path(folderPath));
+    return runFolderScan(fs::u8path(folderPath), output, scanner);
+}
+
+int runFolderScan(const fs::path& root, std::ostream& output, const FileScanner& scanner)
+{
+    const auto result = scanner.scan(root);
     if (!result.rootValid) { output << "Invalid folder path!\n"; }
     FileIndex index;
     for (const auto& entry : result.entries)

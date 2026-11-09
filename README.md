@@ -39,19 +39,24 @@ No global policy change is required. The test script builds the application,
 then the tests, and stops after compilation/test failures. Read PASS/FAIL/SKIP
 separately; unavailable privileges can make link tests SKIP.
 
-Run the application:
+Run the interactive menu from the repository root:
 
     .\build\folderflow.exe
 
-Enter a folder path without surrounding quote characters. A blank entered line
-means the current directory. EOF exits without scanning.
-Exit status: 0 complete, 1 invalid/no input, 2 incomplete.
-Relative output uses forward slashes on all platforms.
+Choose a number for scanning, storage analysis, saved index search, or an
+organization preview. Windows also offers organizing and undoing with
+confirmation. See the [console menu guide](learnings/phase4-4.2-interactive-menu.md).
+
+For the original one-folder scanner prompt, run `folderflow.exe --scan`.
+Press Enter at that prompt to scan the current directory, or supply the folder
+directly with `folderflow.exe --scan "C:\Path With Spaces"`. Scanner exit codes
+are 0 for complete, 1 for invalid or missing input, and 2 for incomplete.
+Relative output paths use forward slashes.
 
 ## Disposable demonstration
 
     $fixture = & .\demo\create_fixture.ps1
-    $fixture | .\build\folderflow.exe
+    $fixture | .\build\folderflow.exe --scan
 
 Expected: 2 files, 2 folders, 1500000 bytes, 1500.00 KB, 1.50 MB.
 The fixture is uniquely created under TEMP; no personal files are modified.

@@ -46,3 +46,15 @@ passed, index 14 passed and storage analyzer 10 passed, with zero failures
 or skips. CLI checks also covered the disposable demo, invalid arguments,
 a partially readable folder, and output parity for eight existing index
 and rule commands. Phase 4.1 Windows execution is pending.
+
+## Phase 4.2 console menu tests
+
+`scripts/test.ps1` also compiles and runs `tests/menu_tests.cpp`. It uses
+scripted input and a recording handler to check navigation, validation,
+confirmation, end of input, stream errors, and recovery after a command error.
+The recording handler checks the command and arguments without moving files.
+
+From the repository root on Linux:
+
+    g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror tests/menu_tests.cpp src/menu.cpp -o build/menu_tests
+    ./build/menu_tests

@@ -12,6 +12,7 @@
 #include "file_index.hpp"
 #include "rule_config.hpp"
 #include "application.hpp"
+#include "menu.hpp"
 #include "file_index.hpp"
 #include "scanner.hpp"
 #include <cctype>
@@ -21,14 +22,21 @@
 #include <map>
 #include <vector>
 
-int main(int argc, char* argv[])
+static int runCommand(int argc, const char* const argv[])
 {
     using namespace folderflow;
 
-    if (argc == 1)
-        return runApplication(std::cin, std::cout);
-
     const std::string command = argv[1];
+
+    if (command == "--scan")
+    {
+        if (argc == 2)
+            return runApplication(std::cin, std::cout);
+        if (argc == 3 && *argv[2] != '\0')
+            return runFolderScan(fs::u8path(argv[2]), std::cout, FileScanner{});
+        std::cerr << "Usage: folderflow --scan [folder]\n";
+        return 1;
+    }
 
     if (command == "--analyze-storage")
     {
@@ -721,12 +729,39 @@ int main(int argc, char* argv[])
         return 0;
     }
     std::cerr << "Usage:\n"
+              << "  folderflow                  (interactive menu)\n"
+              << "  folderflow --scan [folder]\n"
               << "  folderflow --analyze-storage <folder> [top-count]\n"
               << "  folderflow --save-index <folder> <index-file>\n"
               << "  folderflow --load-index <index-file>\n"
               << "  folderflow --check-index <folder> <index-file>\n"
               << "  folderflow --find-name <index-file> <name-part>\n"
               << "  folderflow --index-summary <index-file>\n"
-              << "  folderflow --check-rules <config-file>\n";
+              << "  folderflow --check-rules <config-file>\n"
+              << "  folderflow --evaluate-rules <folder> <config-file>\n"
+              << "  folderflow --dry-run <folder> <config-file>\n"
+              << "  folderflow --organize <folder> <config-file>\n"
+              << "  folderflow --undo <folder>\n";
     return 1;
+}
+
+int main(int argc, char* argv[])
+{
+    if (argc > 1)
+        return runCommand(argc, argv);
+
+#ifdef _WIN32
+    constexpr bool fileMovesAvailable = true;
+#else
+    constexpr bool fileMovesAvailable = false;
+#endif
+
+    return folderflow::runMenu(std::cin, std::cout,
+        [&](const std::vector<std::string>& arguments)
+        {
+            std::vector<const char*> commandArgs{argv[0]};
+            for (const auto& argument : arguments)
+                commandArgs.push_back(argument.c_str());
+            return runCommand(static_cast<int>(commandArgs.size()), commandArgs.data());
+        }, fileMovesAvailable);
 }

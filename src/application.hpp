@@ -11,6 +11,8 @@ class FileScanner;
 int runStorageAnalysis(const std::filesystem::path& root, std::size_t limit,
                        std::ostream& output, std::ostream& errors);
 // 0: complete scan; 1: invalid input/root; 2: partial scan with reported issues.
+int runFolderScan(const std::filesystem::path& root, std::ostream& output,
+                  const FileScanner& scanner);
 int runApplication(std::istream& input, std::ostream& output);
 int runApplication(std::istream& input, std::ostream& output, const FileScanner& scanner);
 }
